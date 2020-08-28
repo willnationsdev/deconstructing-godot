@@ -1,30 +1,74 @@
 # Godot Repository Organization
 
-## Structure
-
 A summary of the overall structure of the source code.
 
+## Project Chunks And High-Level Overview
+
+As a sequence of digestible chunks, the directories are organized like this:
+
+- "Project":
+    - `/`: Build config. C++ config. Git config.
+    - `/tests`: Unit tests.
+    - `/debug`: Logs.
+    - `/doc`: XML API docs.
+    - `/logs`: More logs.
+    - `/misc`: Tons of random junk.
+        - `/misc/ci`: Continuous Integration config
+        - `/misc/dist`: Distribution-specific files. HTML wrappers. Some icons.
+        - `/misc/hooks`: Git hooks. Automates script exec before/after git operations.
+        - `/misc/scons`: Godot-specific scons dependencies.
+        - `/misc/scripts`: Helper scripts for the Godot project.
 - "Core":
-    - `/main`: bootup
-        - `/core`: core interfaces
-        - `/scene`: core impls, uses server interfaces
-        - `/platform`: platform impls
-            - `/drivers`: Godot wrappers for external OS deps
-                - `/thirdparty`: Godot wrappers may incorporate thirdparty code
-        - `/servers`: server interfaces, server impls
-            - `/drivers`: Vulkan + DisplayServer
+    - `/thirdparty`: FOSS libraries that Godot uses.
+        - Gives Godot access to work made by others.
+    - `/drivers`: Godot-specific wrappers for `/thirdparty` and system stuff.
+        - Gives Godot access to hardware on a platform.
+    - `/core`: main data structures, libraries, and interfaces.
+        - Gives Godot a foundation of common features for other sections.
+        - Defines core OS interface.
+    - `/platform`: Defines per-platform OS impls and entry points.
+        - Scons builds engine for each platform based on these dir names.
+        - Any shared platform code is in `/drivers` (unix OS).
+    - `/servers`: Low-level, high-performance interfaces and impls, threaded.
+    - `/scene`: High-level game framework using `/core` and `/servers`.
+        - Has SceneTree, Node/Node2D/Spatial, etc. Configures low-level ops.
+    - `/main`: Common platform ops. Setup. Start. Iteration. Cleanup.
+        - Handles init, cmdline args
 - "Editor":
-    - `/editor`: Godot Editor
+    - `/editor`: A C++-only Godot "game" with elevated privileges (tool mode).
+        - Must only be dependent on "Core". No reference to `/modules`.
+- "Modules":
+    - `/modules`: Optional features appended to Godot Engine and/or Editor.
+        - If a module needs Editor, wrap in `#ifdef TOOLS_ENABLED`.
+        - If a module needs module, refactor to submodules (e.g. gdnative).
+
+## 80% Accurate Dependency Tree
+
+Dependencies between sections exist, but the code is similar to this:
+
+- "Project":
+    - `/`
+- "Core":
+    - `/main`
+        - `/core`
+        - `/scene`
+        - `/platform`
+            - `/drivers`
+                - `/thirdparty`
+        - `/servers`
+            - `/drivers`
+- "Editor":
+    - `/editor`
         - "Core"
 - "Modules":
-    - `/modules`: additional core impls, new features
+    - `/modules`
         - "Core"
         - "Editor"
         - `/thirdparty`
 
 ## Directory Breakdown
 
-A summary of how each directory relates to the project.
+A detailed summary of how each directory relates to the project.
 
 ### Source Code
 
@@ -58,7 +102,7 @@ A summary of how each directory relates to the project.
     - Used By:
         - `/servers`: concrete OS-specific DisplayServer impls
         - `/modules`: optional features: module interface, submodule impls
-- /drivers
+- `/drivers`
     - Description:
         - Defines wrappers for local APIs that may be shared between platforms.
     - Dependencies:
@@ -67,7 +111,7 @@ A summary of how each directory relates to the project.
         - extern local OS dependencies
     - Used By:
         - `/platform`: OS library dependencies
-- /editor
+- `/editor`
     - Description:
         - Defines the Godot Editor and its various subsystems.
         - Defines C++ EditorPlugin tools for anything in core, scene, etc.
@@ -77,7 +121,7 @@ A summary of how each directory relates to the project.
         - `/servers`: config, res mgmt, preview, window mgmt, debugging, settings
     - Used By:
         - `/modules`: EditorPlugins, protected by #ifdef TOOLS_ENABLED
-- /main
+- `/main`
     - Description:
         - Defines the Main class. Boots up engine. Handles cmdline args.
     - Dependencies:
@@ -132,17 +176,3 @@ A summary of how each directory relates to the project.
     - Used By:
         - `/modules`: integration
         - `/drivers`: integration
-
-### Misc Directories
-
-- `/`: project sln, scons + scripts, communications, git, github, clang
-- `/tests`: Unit tests.
-- `/debug`: Logs.
-- `/doc`: XML API docs for script-exposed classes + translations.
-- `/logs`: More logs. Not sure of the difference.
-- `/misc`: Tons of random junk.
-    - `/misc/ci`: Continuous Integration configuration
-    - `/misc/dist`: Distribution-specific files. HTML wrappers. Some icons.
-    - `/misc/hooks`: Git hooks
-    - `/misc/scons`: Godot-specific scons project dependencies.
-    - `/misc/scripts`: Helper scripts for the Godot project.

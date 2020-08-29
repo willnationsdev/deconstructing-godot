@@ -105,9 +105,7 @@ func my_func() -> void:
     var c = data.get_children()
 ```
 
-GDScript has different degrees to which it can satisfy an interface. However,
-nothing is guaranteed at parse-time. You are limited to basic inheritance with static
-typing or checking method names.
+GDScript has different degrees to which it can satisfy an interface. However, nothing is guaranteed at parse-time. You are limited to basic inheritance with static typing or checking method names.
 
 ---
 
@@ -171,10 +169,10 @@ public:
 }
 ```
 
-Note that, with C++, the relationship with the interface must be explicit.
-Just because the `Node` class has `get_parent` and `get_children` methods
-doesn't mean it conforms to the `IParentable` interface.
+Note that, with C++, the relationship with the interface must be explicit. Just because the `Node` class has `get_parent` and `get_children` methods doesn't mean it conforms to the `IParentable` interface. You would need to modify the definition of the `Node` class to explicitly have it implement the `IParentable` interface.
 
-In contrast, because GDScript is duck-typed, it would allow a Node to be used
-in place of a ParentableObject / ParentableResource for these purposes just
-fine.
+In contrast, because GDScript is duck-typed, it would allow a `Node` to be used in place of a `ParentableObject` / `ParentableResource` for these purposes just fine.
+
+Note though that, in practice, making nodes an `IParentable` or using `IParentable`s where a `Node` is expected would be problematic. After all, `Node` can do a lot more, so things expecting a `Node` would want more from an `IParentable`. However, the idea of exposing a subset of class features via an interface is useful in contexts where the code *only cares* about *that interface* and no other features.
+
+To have a truly extensible codebase, you'd have to redesign `Node` so that each of its various features were bound to an interface which any given class could implement. Why doesn't Godot do this? Because breaking down `Node`'s features to such a degree of precision would add unnecessary complication to the engine's design.

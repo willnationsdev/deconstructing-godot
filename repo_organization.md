@@ -2,7 +2,7 @@
 
 A summary of the overall structure of the source code.
 
-## Project Chunks And High-Level Overview
+## High-Level Overview
 
 As a sequence of digestible chunks, the directories are organized like this:
 
@@ -67,11 +67,9 @@ Dependencies between sections exist, but the code is similar to this:
         - "Editor"
         - `/thirdparty`
 
-## Directory Breakdown
+## Low-Level Breakdown
 
 A detailed summary of how each directory relates to the project.
-
-### Source Code
 
 - `/core`:
     - Description:

@@ -30,10 +30,11 @@ As a sequence of digestible chunks, the directories are organized like this:
         - Scons builds engine for each platform based on these dir names.
         - Any shared platform code is in `/drivers` (unix OS).
     - `/servers`: Low-level, high-performance interfaces and impls, threaded.
+        - Has rendering, physics, audio, window mgmt, nav, camera, XR.
     - `/scene`: High-level game framework using `/core` and `/servers`.
         - Has SceneTree, Node/Node2D/Spatial, etc. Configures low-level ops.
     - `/main`: Common platform ops. Setup. Start. Iteration. Cleanup.
-        - Handles init, cmdline args
+        - Also handles cmdline args
 - "Editor":
     - `/editor`: A C++-only Godot "game" with elevated privileges (tool mode).
         - Must only be dependent on "Core". No reference to `/modules`.

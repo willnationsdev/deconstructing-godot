@@ -109,13 +109,59 @@ GDScript has different degrees to which it can satisfy an interface. However, no
 
 ---
 
+In C++, data types and method signatures are *far* more explicit. There's a lot of clutter on the page, but we'll break it down step by step and then explore the practical example.
+
+```cpp
+// some_class.h
+class SomeClass {
+public:
+    virtual ISomeType *get_value() const = 0;
+    virtual ISomeType *get_value() const override { return nullptr; }
+};
+
+// class declaration
+class Some Class { ... };
+
+// "access modifier": whether other classes can access the variable/method.
+class Some Class {
+private: 
+    int _x; // only available inside class. GDScript just uses `_` convention.
+protected: 
+    int _y; // only available in this or extended classes.
+public: 
+    int z; // available everywhere. This is the only option in GDScript.
+};
+
+// basic function signature:
+// <ReturnType> <method_name>(<param list...>);
+// ReturnType: ISomeType *
+// MethodName: get_value
+// ParameterList: ()
+ISomeType *get_value();
+
+// advanced function signature:
+// `virtual`: can be overridden by a derived class. Always in GDScript.
+// `*`: handling a data type by reference. Similar to Object/Array/Dictionary.
+// `const`: This function makes no changes to the Object it belongs to.
+// `= 0`: There is no implementation of this function. Class is abstract. Cannot instantiate.
+virtual ISomeType *get_value() const = 0;
+
+// advanced function signature (continued):
+// `virtual`: part of an overridden method hierarchy. Always in GDScript.
+// `override`: this method IS overriding an inherited method.
+// `nullptr`: This is GDScript's `null`. The `ptr` stands for "pointer".
+virtual ISomeType *get_value() const override { return nullptr; }
+```
+
+Now, for the actual example.
+
 ```cpp
 // iparentable.h
 class IParentable {
 public:
     virtual IParentable *get_parent() const = 0;
     virtual void get_children(List<IParentable *> *r_children) const = 0;
-}
+};
 
 // parentable_object.h
 #include "iparentable.h"
@@ -124,7 +170,7 @@ class ParentableObject : public Object, public IParentable {
 public:
     virtual IParentable *get_parent() const override {}
     virtual void get_children(List<IParentable *> *r_children) const override {}
-}
+};
 
 // parentable_resource.h
 #include "iparentable.h"
@@ -140,7 +186,7 @@ public:
             r_children->push_front(E->get());
         }
     }
-}
+};
 
 // uses_awesome_parent.h
 class UsesAwesomeParent : public Node {
@@ -166,7 +212,7 @@ public:
         List<IParentable *> c;
         data->get_children(&c);
     }
-}
+};
 ```
 
 Note that, with C++, the relationship with the interface must be explicit. Just because the `Node` class has `get_parent` and `get_children` methods doesn't mean it conforms to the `IParentable` interface. You would need to modify the definition of the `Node` class to explicitly have it implement the `IParentable` interface.

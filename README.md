@@ -1,6 +1,10 @@
-# Godot Source Walkthrough
+# Deconstructing Godot
 
-A gradual introduction to Godot Engine's source code for those with some GDScript experience and little to no C++ experience.
+A gradual introduction to Godot Engine's source code for those with some GDScript experience and little to no C++ experience. This repository is a complement to a YouTube series available [here](https://www.youtube.com/playlist?list=PLthxCU-NcfYtKogfNjR-6ds73klIOIbWc).
+
+If you would like to suggest a topic, please [open an Issue](https://github.com/willnationsdev/deconstructing-godot/issues/new).
+
+If you found the content educational, please consider becoming my sponsor using the button above. I spend dozens of hours preparing the lessons through research, write ups, recording videos, and managing the channel. Regardless, it's all worth it if it helps enlighten viewers to the wonders of Godot.
 
 ## Topics
 

@@ -23,7 +23,7 @@ The reason you would want to rely on interfaces in software architecture is beca
 
 This means you can make changes faster. Iteration increases and you save time and money. It also makes it easier to work *with* your code so that others feel more comfortable joining your team. Not driving yourself insane is another plus.
 
-## Example
+## Duck-Typed Interfaces In GDScript
 
 Let's say we want to store data for our game. We like the tree structure of nodes to organize our data, but Nodes are big. They use more memory than Objects and Resources. Can we add a Node-like structure to other types?
 
@@ -107,9 +107,133 @@ func my_func() -> void:
 
 GDScript has different degrees to which it can satisfy an interface. However, nothing is guaranteed at parse-time. You are limited to basic inheritance with static typing or checking method names.
 
----
+## Comparing C++ syntax to GDScript
 
-In C++, data types and method signatures are *far* more explicit. There's a lot of clutter on the page, but we'll break it down step by step and then explore the practical example.
+C++ is far more explicit and detailed than GDScript. Here are some step-by-step comparisons of their syntax.
+
+### Class declaration
+
+```cpp
+// some_class.h
+class SomeClass {
+
+};
+```
+
+```gdscript
+# some_class.gd (having the file alone is enough)
+```
+
+### Access modifiers
+
+```cpp
+// some_class.h
+class SomeClass {
+private:
+    int _x; // only accessible in SomeClass
+protected:
+    int _y; // only accessible in SomeClass and its derived classes
+public:
+    int z; // acessible from any class
+};
+```
+
+```gdscript
+# some_class.gd, everything is public, just uses conventions
+var _x: int
+var _y: int
+var z: int
+```
+
+### Nested Classes
+
+```cpp
+// list.h
+class List {
+public:
+    class Element {
+        Object *_data;
+        Element(Object *p_data = nullptr) { _data = p_data; }
+    };
+    Array elements;
+    List() {}
+};
+
+// `*` means a "pointer" to a type. It is similar to "pass by reference".
+//     - In GDScript, Object/Array/Dictionary are references, but all else uses values.
+// `new Type()` is used to allocate memory for non-Object things.
+//     - In GDScript, `Type()` allocates new built-in, non-Object types.
+// `memnew(Type)` is used to allocate memory for Object things.
+//     - In GDScript, `Type.new()` allocates new Objects.
+// `::` is the "scope operator" which allows us to refer to things in a class.
+//     - In GDScript, everything uses the `.` operator.
+List::Element *elem = new List::Element(memnew(Object));
+```
+
+```gdscript
+# list.gd, technically extends Reference, but w/e
+var elements := []
+class ListElement:
+    var _data: Object = null
+    func _init(p_data: Object = null):
+        _data = p_data
+
+# We use `Type.new()` for both here because all scripted types are Objects.
+const List = preload("list.gd")
+var elem: List.Element = List.Element.new(Object.new())
+```
+
+### Method Definitions
+
+```cpp
+
+```
+
+```gdscript
+
+```
+
+### Virtuals, Pure Virtuals, and Overrides
+
+```cpp
+
+```
+
+```gdscript
+
+```
+
+### For Loops: Array
+
+```cpp
+
+```
+
+```gdscript
+
+```
+
+### For Loops: Vector
+
+```cpp
+
+```
+
+```gdscript
+
+```
+
+### For Loops: List
+
+```cpp
+
+```
+
+```gdscript
+
+```
+
+(WIP, section below is obsolete until practical example)
 
 ```cpp
 // some_class.h
@@ -120,10 +244,10 @@ public:
 };
 
 // class declaration
-class Some Class { ... };
+class SomeClass { ... };
 
 // "access modifier": whether other classes can access the variable/method.
-class Some Class {
+class SomeClass {
 private: 
     int _x; // only available inside class. GDScript just uses `_` convention.
 protected: 
@@ -133,7 +257,7 @@ public:
 };
 
 // basic function signature:
-// <ReturnType> <method_name>(<param list...>);
+// <ReturnType> <method_name>(<ParamType> param1, <ParamType> param2);
 // ReturnType: ISomeType *
 // MethodName: get_value
 // ParameterList: ()
@@ -168,7 +292,7 @@ public:
 class ParentableObject : public Object, public IParentable {
     // <insert Godot Object stuff here>
 public:
-    virtual IParentable *get_parent() const override {}
+    virtual IParentable *get_parent() const override { return nullptr; }
     virtual void get_children(List<IParentable *> *r_children) const override {}
 };
 
@@ -183,10 +307,18 @@ public:
     }
     virtual void get_children(List<IParentable *> *r_children) const override {
         for (const List<IParentable *>::Element *E = _children.front(); E; E = E->next()) {
-            r_children->push_front(E->get());
+            r_children->push_back(E->get());
         }
     }
 };
+// # list.gd
+// class_name List
+// class Element:
+//     extends Reference
+// for (starting condition; iteration condition; iteration operation) {
+
+// }
+// for elem in list.children:
 
 // uses_awesome_parent.h
 class UsesAwesomeParent : public Node {

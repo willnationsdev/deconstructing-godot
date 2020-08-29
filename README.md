@@ -6,7 +6,7 @@ A gradual introduction to Godot Engine's source code for those with some GDScrip
 
 This is a tentative ordered list of topics. As lessons progress, it may become necessary to cover additional content within or between topics in order to properly cover the material.
 
-1. [Interfaces: GDScrip to C++](interfaces_gdscript_to_cpp.md)
+1. [Interfaces: GDScript to C++](interfaces_gdscript_to_cpp.md)
 1. [Repository Organization](repo_organization.md)
 1. ClassDB and Reflection
 1. Object

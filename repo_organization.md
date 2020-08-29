@@ -73,7 +73,7 @@ A detailed summary of how each directory relates to the project.
 
 ### Source Code
 
-- `/core`
+- `/core`:
     - Description:
         - Basic data structures and algorithms.
         - Defines the core API for every Godot concept.
@@ -91,7 +91,7 @@ A detailed summary of how each directory relates to the project.
         - `/scene`: Nodes and Resources via forward declarations
     - Used By:
         Everything except `/thirdparty`.
-- `/platform`
+- `/platform`:
     - Description:
         - Defines OS singleton implementations.
         - Defines entry points for each platform. Uses a common Main class.
@@ -103,7 +103,7 @@ A detailed summary of how each directory relates to the project.
     - Used By:
         - `/servers`: concrete OS-specific DisplayServer impls
         - `/modules`: optional features: module interface, submodule impls
-- `/drivers`
+- `/drivers`:
     - Description:
         - Defines wrappers for local APIs that may be shared between platforms.
     - Dependencies:
@@ -112,7 +112,7 @@ A detailed summary of how each directory relates to the project.
         - extern local OS dependencies
     - Used By:
         - `/platform`: OS library dependencies
-- `/editor`
+- `/editor`:
     - Description:
         - Defines the Godot Editor and its various subsystems.
         - Defines C++ EditorPlugin tools for anything in core, scene, etc.
@@ -122,7 +122,7 @@ A detailed summary of how each directory relates to the project.
         - `/servers`: config, res mgmt, preview, window mgmt, debugging, settings
     - Used By:
         - `/modules`: EditorPlugins, protected by #ifdef TOOLS_ENABLED
-- `/main`
+- `/main`:
     - Description:
         - Defines the Main class. Boots up engine. Handles cmdline args.
     - Dependencies:
@@ -136,7 +136,7 @@ A detailed summary of how each directory relates to the project.
         - `/tests`: run unit tests upon request
     - Used By:
         None
-- `/scene`
+- `/scene`:
     - Description:
         - Defines all objects/nodes/resources that are not required by /core.
         - Usage in other spaces is pretty self-explanatory.
@@ -148,7 +148,7 @@ A detailed summary of how each directory relates to the project.
         - `/servers`: various Resources
         - `/editor`: tons of nodes/resources/etc.
         - `/modules`: tons of nodes/resources/etc.
-- `/servers`
+- `/servers`:
     - Description:
         - Defines low-level Server interfaces.
         - Defines dependent Resources in some cases.
@@ -169,7 +169,7 @@ A detailed summary of how each directory relates to the project.
               interfaces?
                 - Implementation of GdNavigationServer
                 - Implementation of XRInterface for mobile and gdnative
-- `/thirdparty`
+- `/thirdparty`:
     - Description:
         Directly imports the source code of third-party libraries.
     - Dependencies:
@@ -177,3 +177,11 @@ A detailed summary of how each directory relates to the project.
     - Used By:
         - `/modules`: integration
         - `/drivers`: integration
+- `/modules`:
+    - Description:
+        Defines optional features which can easily be added or removed from
+        both the engine and the editor during compilation.
+    - Dependencies:
+        Everything
+    - Used By:
+        None

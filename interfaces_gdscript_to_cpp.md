@@ -1,117 +1,20 @@
-# Interfaces: GDScript to C++
-
-A practical explanation of interfaces for beginners.
-
-## Concepts
-
-What is an interface?
-
-It's a contract where a class agrees to define a set of function signatures.
-
-What is a function signature?
-
-It's the combination of the function's...
-
-- name
-- return data type
-- number of parameters
-- parameter data types
-
-## Purpose
-
-The reason you would want to rely on interfaces in software architecture is because it keeps your code "loosely coupled" to other parts of the codebase. This makes it easier to adapt to changes in requirements or usage. Your code can change shape without breaking the program and without creating bugs.
-
-This means you can make changes faster. Iteration increases and you save time and money. It also makes it easier to work *with* your code so that others feel more comfortable joining your team. Not driving yourself insane is another plus.
-
-## Duck-Typed Interfaces In GDScript
-
-Let's say we want to store data for our game. We like the tree structure of nodes to organize our data, but Nodes are big. They use more memory than Objects and Resources. Can we add a Node-like structure to other types?
-
-Godot Engine supports a similar idea with its `Tree` class and its internal `TreeItem` Object types. It isn't an interface, but it *is* a non-Node Object that supports a hierarchical structure.
-
-For our case, we could have an IParentable interface that defines the methods below:
-
-```gdscript
-func get_parent() -> Object:
-    pass
-func get_children() -> Array:
-    pass
-```
-
-We have a "set of function signatures" that must be defined in a class.
-
-We've detailed the names they must have, what parameters they must accept, and what data type they must return.
-
-Note that the sample is just a pair of methods. It is *not* an actual script file.
-
-Now for concrete implementations of the interface, they just have to implement those same methods.
-
-```gdscript
-# duck-typed interface. Works off function names.
-# The existence of the interface is implied by the functions' use.
-
-# parentable_object.gd
-extends Object
-
-func get_parent() -> Object:
-    return null
-
-
-func get_children() -> Array:
-    return []
-
-# parentable_resource.gd
-extends Resource
-
-export var _parent: Object = null
-export var _children := []
-
-func get_parent() -> Object:
-    return _parent
-    
-
-func get_children() -> Array:
-    return _children
-
-# uses_parentable.gd
-extends Node
-
-func my_func() -> void:
-    var data = DataStoreSingleton.get_data()
-
-    # BAD - we've filtered out the Object version!
-    if data is Resource:
-        var p = data.get_parent()
-        var c = data.get_children()
-
-    # Note: cannot verify signature, only name.
-    var is_iparentable = (data.has_method("get_parent")
-                         and data.has_method("get_children"))
-
-    # If error, silently fails, but continues
-    if is_iparentable:
-        var p = data.get_parent()
-        var c = data.get_children()
-    
-    # If error, loudly fails, but continues
-    if is_iparentable:
-        var p = data.get_parent()
-        var c = data.get_children()
-    else:
-        push_error("'data' is does not implement the IParentable interface")
-
-    # If error, loudly fails and crashes
-    var p = data.get_parent()
-    var c = data.get_children()
-```
-
-GDScript has different degrees to which it can satisfy an interface. However, nothing is guaranteed at parse-time. You are limited to basic inheritance with static typing or checking method names.
-
-## Comparing C++ syntax to GDScript
+# Comparing C++ and GDScript Syntax
 
 C++ is far more explicit and detailed than GDScript. Here are some step-by-step comparisons of their syntax.
 
-### Class declaration
+## Comments
+
+```cpp
+// Comments use double-slashes
+```
+
+```gdscript
+# Comments use pound / hash
+```
+
+## Class declaration
+
+In C++, it isn't enough to have a file. You must explicitly declare the existence of the class using the `class` keyword, followed by its name.
 
 ```cpp
 // some_class.h
@@ -120,11 +23,13 @@ class SomeClass {
 };
 ```
 
-```gdscript
-# some_class.gd (having the file alone is enough)
-```
+In GDScript, the file *is* the class. If no `extends <type>` is written, it defaults to `Reference`. So, an empty `.gd` file counts as a class.
 
-### Access modifiers
+## Access modifiers
+
+In C++, external classes can only access properties and methods under certain conditions. By default, they are `private`. The class must explicitly specify `protected` or `public` regions if desired.
+
+Usually, non-public properties and methods are prefixed with an underscore.
 
 ```cpp
 // some_class.h
@@ -139,51 +44,507 @@ public:
 ```
 
 ```gdscript
-# some_class.gd, everything is public, just uses conventions
+# some_class.gd
+# Everything is public. Uses conventions to communicate intended access.
 var _x: int
-var _y: int
 var z: int
 ```
 
-### Nested Classes
+## Symbols: Variables as Memory Locations
+
+A "symbol" is a string of text within a language's source code that identifies a language entity (something the language tracks).
+
+```gdscript
+extends Node
+var x = 0 # `x` is a symbol
+```
+
+All languages have the concept of a "symbol table" which it uses to track symbol locations.
+
+A language's internals might look something like a Dictionary storing strings mapped to their memory locations:
+
+```gdscript
+var symbols = {}
+var values = {}
+
+# do `var x = 10` in a script
+
+symbols["x"] = 1048489292048
+values["x"] = 10
+```
+
+However, for simplicity, most memory address information is hidden in GDScript.
+
+## Copies vs. References
+
+In GDScript, most all data is "passed by value". Different variables make a copy during assignment.
+
+```gdscript
+var v1 = Vector2()
+var v2 = v1 # copied!
+v1.x = 10
+# v2.x is still 0
+```
+
+However, every Object, Array, and Dictionary is "passed by reference". Different variables "reference" the same data.
+
+```gdscript
+var n1 = Node.new()
+var n2 = n1 # referenced!
+n1.name = "MyNode"
+# n2.name is also "MyNode" now
+```
+
+In C++, the distinction between a value and a reference is not based on the data type, but rather the syntax. Furthermore, different data types are responsible for handling references versus values.
 
 ```cpp
-// list.h
-class List {
-public:
-    class Element {
-        Object *_data;
-        Element(Object *p_data = nullptr) { _data = p_data; }
-    };
-    Array elements;
-    List() {}
+class SomeClass {};
+
+SomeClass s1; // data type is SomeClass, a value
+SomeClass &s2 = s1; // data type is SomeClass&, a reference
+```
+
+The `&` modifies the type to be a constant reference to some SomeClass instance. To be specific, `s2` is actually an unsigned integer storing the memory address of `s1`. By passing around the memory address, C++ can make *anything* into a reference, including integers.
+
+```cpp
+int x = 0;
+int &y = x; // some arbitrary memory address, like 184728300
+```
+
+However, as mentioned, these 'reference' data types are *constant*. You can't make them reference something else once they've been initialized! Why is that? Because of the Stack...
+
+## The Stack
+
+Whenever you enter a new block of code, the computer sets aside a region of memory for you to use in that block called the Stack. In GDScript, every variable is 20 bytes of memory (we'll get into why another time). So...
+
+```gdscript
+var x = 1
+var y = 16
+var z = 256
+```
+
+...looks like this in the Stack:
+
+```
+184728300: 0x00001
+184728320: 0x00010
+184728340: 0x00100
+```
+
+The compiler knows that every GDScript variable is 20 bytes. Therefore, it always knows at which memory address to write the next variable's data..
+
+Once you've established that a reference is refering to a symbol's memory address, it won't allow you to reset it to look at a different location, lest you change it and corrupt memory.
+
+The most important thing about memory, however, is how it gets reused!
+
+Say you define some variables in a block of code. When the block ends and you start a new block, your new segment of the Stack may overlap with the previous block's. The data written in memory for the old variables *may still be there*.
+
+In GDScript, everything is initialized for you, setting the old data to a default value.
+
+```gdscript
+var x      # always defaults to null
+var y: int # always defaults to 0
+```
+
+In C++, uninitialized variables will contain arbitrary trash from previous contexts. C++ will attempt to interpret those bits as if they were the variable's type, no matter what data type they were originally part of.
+
+```cpp
+int x;     // value is ?????. Was it an object? Who cares? Now it's an `int`.
+int y = 0; // value is 0
+```
+
+Therefore, for safety in C++, you must always initialize your data manually.
+
+## Arrays
+
+In GDScript, `Array`s are a built-in class with their own methods. They can dynamically resize themselves to grow or shrink as needed. They can also store multiple data types.
+
+```gdscript
+var arr := []         # Assignment using Array literal.
+var arr2 := Array()   # Assignment using Array constructor.
+if arr == arr2:       # They know how to compare against each other.
+    print(arr.size()) # size() returns 0
+
+arr.append(10)        # now size() returns 1
+
+arr.append("hello")   # now contains integers AND strings
+
+```
+
+Not so in C++. Arrays are a primitive (non-class) data type. More importantly, the Stack needs to know, at compile time, where it needs to write the next variable's data. This means you have to declare ahead of time how much data is needed for every variable.
+
+In order to know the size of the array, you need to know the size of its elements. So, every element must be the same data type and there must be a fixed total capacity for the array.
+
+```cpp
+// sizeof(int) == 4
+// capacity of array is 10
+// 4 bytes * 10 elements = 40 total bytes
+// Therefore, the 5 in `x` is written 40 bytes ahead of `arr`.
+int arr[10]; // type = `int[]`; capacity = 10; size = 0;
+arr[0] = 3;  // size = 1
+int x = 5;
+```
+
+Unlike an `Array`, C++ arrays are given existing memory on the Stack.
+
+If you attempt to access data outside the bounds of the array, it doesn't loop around. Instead, accessing memory that doesn't belong to you will result in a fatal crash called a "segmentation fault".
+
+GDScript produces a runtime script error if you try to access a too-high index. But, a too-low index is interpreted as an intent to count backwards from the end.
+
+```gdscript
+var arr := [4, 5, 6]
+arr[0] # 4
+arr[3] # error!
+arr[-1] # 6
+```
+
+```cpp
+int arr[3];
+arr[-1]; // crash
+arr[0]; // safe
+arr[1]; // safe
+arr[2]; // safe
+arr[3]; // crash
+```
+
+Because the exact size must be known at compile time, only literals and constants may be used to define the length of an array.
+
+```cpp
+const int CAPACITY = 10; // `const int`. Immutable value (value is constant).
+int capacity = 10;       // `int`. Mutable value (value can change).
+
+int arr[10];             // literal, compiles.
+int arr[CAPACITY];       // variable with immutable data type, compiles.
+int arr[capacity];       // variable with mutable data type, does not compile.
+```
+
+But wait! That can't be all there is, right? GDScript's `Array` can change its capacity. Why is that? Because of the Heap...
+
+## Heap, and Pointers
+
+The Heap is a region of memory that exists elsewhere in the computer. Where *exactly* the memory is generally unknown since the operating system micromanages it. An app can request memory from the Heap whenever it wants to at runtime.
+
+The Heap is not tied to a particular block of code. The memory will persist between code blocks until we manually free the memory.
+
+The good news? You can request a variable amount of data. Also, the memory is not part of a block, so the Stack can't remove it.
+
+The bad news?
+
+
+
+
+
+
+The `*` means we have a `uint64_t` (an unsigned 64-bit integer) which stores a memory address for a `SomeClass` instance.
+
+
+C++ calls these data types "pointers"
+
+## Method Definitions (Basic)
+
+In GDScript, a return value's data type and the parameters' data types are optional. In C++, they are required. Because they are required, they go before a parameter's symbol, not after.
+
+```cpp
+class SomeClass {
+
+    void print_hello() {
+        print_line("Hello World!");
+    }
+
+    int add(int a, int b) {
+        return a + b;
+    }
 };
-
-// `*` means a "pointer" to a type. It is similar to "pass by reference".
-//     - In GDScript, Object/Array/Dictionary are references, but all else uses values.
-// `new Type()` is used to allocate memory for non-Object things.
-//     - In GDScript, `Type()` allocates new built-in, non-Object types.
-// `memnew(Type)` is used to allocate memory for Object things.
-//     - In GDScript, `Type.new()` allocates new Objects.
-// `::` is the "scope operator" which allows us to refer to things in a class.
-//     - In GDScript, everything uses the `.` operator.
-List::Element *elem = new List::Element(memnew(Object));
 ```
 
 ```gdscript
-# list.gd, technically extends Reference, but w/e
-var elements := []
-class ListElement:
-    var _data: Object = null
-    func _init(p_data: Object = null):
-        _data = p_data
+# some_class.gd
+func print_hello() -> void:
+    print("Hello World!")
 
-# We use `Type.new()` for both here because all scripted types are Objects.
+
+func add(a: int, b: int) -> int:
+    return a + b
+```
+
+## Declarations vs Definitions
+
+In GDScript, every symbol is both a declaration that *a thing exists* and a definition of *what that thing is*.
+
+```gdscript
+# node_a.gd, file exists (declaration), its content details definition
+extends Node
+
+# node_b.gd, file exists (declaration), its content details definition
+extends Node
+```
+
+But C++ is ultimately a procedural language. Definitions occur in order.
+
+```cpp
+class A {
+    B b; // error! Do not recognize class 'B'.
+}
+
+class B {
+    A a;
+};
+```
+
+The compiler will need to know how many bytes an instance of A uses. So it looks up the size of B. But if we haven't arrived at B's declaration, then we don't know what B is.
+
+Let's first "declare" that these types exist using a "forward declaration". Then we can "define" what they are later. This will tell the compiler to worry about how big they are until after it has catalogued the size of everything else.
+
+```cpp
+// forward declarations
+class A;
+class B;
+
+class A {
+    B b;
+}
+
+class B {
+    A a;
+};
+```
+
+This is how C++ handles circular dependency issues which GDScript 1.0 in Godot 3.x struggles with.
+
+## Scopes
+
+A "scope" is a region of code where certain symbols exist.
+
+### Local Scope
+
+    Local variables only exist in a specific block and its nested blocks. This can often make the terms `scope` and `block` interchangeable *within local scopes*.
+
+    C++ can create a new scope any time it wants with curly braces.
+
+    ```cpp
+    {
+        // `x` symbol does not exist
+        int x = 10;
+        // `x` symbol now exists
+        {
+            int y = x;
+            // `y` symbol now exists
+        }
+        // `y` symbol no longer exists
+    }
+    // `x` symbol no longer exists
+    ```
+
+    GDScript uses indents to define new local scopes. It cannot create them directly. You must declare a method or use control flow to establish a new scope.
+
+    ```gdscript
+    func do():
+        # `x` symbol does not exist
+        var x = 10
+        # `x` symbol now exists
+        if true:
+            var y = x
+            # `y` symbol now exists
+        # `y` symbol no longer exists
+    # `x` symbol no longer exists
+    ```
+
+### Class Scope:
+
+    Symbols which are available throughout a class.
+
+    ```cpp
+    class SomeClass {
+    
+    };
+    ```
+
+    ```gdscript
+    var x = 10
+    func do_one():
+        x += 5 # refers to `x` property
+    func do_two():
+        x += 10 # also refers to `x` property
+    ```
+
+## Global Scope
+
+Symbols which are available everywhere.
+
+GDScript does not give users write access to its global scope, but it does create a few read-only variables for users.
+
+- `GDNativeClass`, e.g. `Node`, `Resource`, `Object`
+    - `Object` itself doesn't have a `.new()` method. GDScript creates fake classes with `.new()` which creates instances for users.
+- Engine Singletons, e.g. `Engine`, `OS`, etc.
+- Autoload Singletons (Node-extending scripts or scenes you configure in ProjectSettings)
+- Script Classes (scripts using the `class_name` keyword)
+
+In C++, everything is in global scope by default. To avoid putting things in global scope, one must wrap them in different scope. (Note: we'll go over function syntax later).
+
+C++ has a special term for the collection of symbols present certain scopes: a "namespace".
+
+```cpp
+// A C++ function with a global variable.
+int x = 0;
+void do_nothing() {
+    return 0;
+}
+```
+
+If a symbol occupies the global namespace, then C++ will not allow something else to use that symbol. This can quickly become a problem, so you should try to avoid it as much as possible.
+
+To not pollute the global namespace, we must move the global variable inside the function.
+
+```cpp
+// A C++ function with a local variable.
+void do_nothing() {
+    int x = 0;
+}
+```
+
+Uh oh! The `do_nothing` function is still in the global namespace. Put it in a class!
+
+```cpp
+// A C++ class with a member function, i.e. a method.
+class SomeClass {
+public:
+    void do_nothing() {
+        int x = 0;
+    }
+};
+```
+
+That's better. But now `SomeClass` is in the global namespace. Can't we do something?
+
+Thankfully, C++ lets you create namespaces too.
+
+```cpp
+// A C++ function with a local variable
+namespace Some {
+    class SomeClass {
+    public:
+        void do_nothing() {
+            int x = 0;
+        }
+    };
+}
+```
+
+Now, let's access our `SomeClass`.
+
+```cpp
+namespace Some {
+    // ...
+}
+
+SomeClass some; // error! Do not recognize identifier 'SomeClass'.
+```
+
+C++ gives us an error saying it doesn't know of a `SomeClass` class. This is because we are doing so outside of the namespace. Our mention of `SomeClass` tries to find it in the global namespace. To look inside the `Some` namespace, we must use the `::` "scope operator".
+
+```cpp
+Some::SomeClass some;
+```
+
+This is analogous to trying to access an inner class from outside of a GDScript.
+
+```gdscript
+# list.gd
+class Element:
+    pass
+
+# some_class.gd
 const List = preload("list.gd")
-var elem: List.Element = List.Element.new(Object.new())
+var element = Element.new() # error! Do not recognize 'Element'.
+var element = List.Element.new() # works!
 ```
 
-### Method Definitions
+## Static (TODO)
+
+You use the scope operator whenever you must access something in a "static" context. That is, a context belonging to a namespace or class.
+
+## What's an API? Source Files vs. Header Files
+
+There's another reason that C++ might use declarations in place of definitions.
+
+The bigger an application gets, the longer you have to wait for C++ code to compile in order to test your code. But what if a change doesn't affect other parts of your code?
+
+```cpp
+// number.cpp
+
+int get_number() {
+    return 5;
+}
+
+// double.cpp
+#include "number.cpp"
+int double_number() {
+    return 2 * get_number();
+}
+```
+
+> We'll get to `#include` later. For now, know that it copy/pastes the other file's contents into the current file.
+
+If you compile the `double.cpp` file, it will have both the `get_number` and `double_number` functions.
+
+If you change `get_number` to return 10 instead of 5, the compiler *still* recompiles the entire file, including the `double_number` function. But, `double_number`'s logic is completely unchanged. Can we avoid that?
+
+Languages expose a collection of "language entities":
+
+- global variables and functions
+- namespaces
+- classes
+    - properties (class variables)
+    - methods (class functions)
+
+The sum of all language entities which enable a programmer to use a piece of software are called the Application Programmer Interface or API.
+
+When it comes to functions in an API, there is a big distinction between declarations and definitions. If the function signature is unchanged, then changing the implementation of that function's definition has no effect on the API. Therefore, only the implementation needs to be recompiled.
+
+```cpp
+// number.h
+int get_number(); // forward declare that we want this function here in memory.
+
+// number.cpp
+#include "number.h"
+int get_number() { // define what the function should do
+    return 10;
+}
+
+// double.cpp
+#include "number.h"
+int double_number() {
+    return 2 * get_number(); // still references same function start in memory.
+}
+```
+
+When you call a function, the CPU must jump to that location in memory and begin executing the logic there. But if the memory address doesn't need to recompile, then the things *referencing* that function's memory address also do not need to recompile.
+
+`double.cpp` only includes the `.h` header file containing the declarations. As a result, so long as those don't change, recompiling `double.cpp` is unnecessary. When executing `double_number`, the compiler will still need to 
+
+When you do the same thing for classes, you must combine header file and source file separation with the lessons you learned about scope access.
+
+```cpp
+// number.h
+class Number {
+public:
+    int get_value();
+}
+
+// number.cpp
+#include "number.h"
+int Number::get_value() { // symbol 'get_value' belongs to the 'Number' scope
+    return 10;
+}
+
+// double.cpp
+#include "number.h"
+int double_number(Number n) {
+    return 2 * n.get_value();
+}
+```
+
+### Virtuals, Abstract Classes, and Overrides (TODO)
 
 ```cpp
 
@@ -193,7 +554,9 @@ var elem: List.Element = List.Element.new(Object.new())
 
 ```
 
-### Virtuals, Pure Virtuals, and Overrides
+### Function Overloads (TODO)
+
+### For Loops: Array (TODO)
 
 ```cpp
 
@@ -203,7 +566,7 @@ var elem: List.Element = List.Element.new(Object.new())
 
 ```
 
-### For Loops: Array
+### For Loops: Vector (TODO)
 
 ```cpp
 
@@ -213,7 +576,7 @@ var elem: List.Element = List.Element.new(Object.new())
 
 ```
 
-### For Loops: Vector
+### For Loops: List (TODO)
 
 ```cpp
 
@@ -223,17 +586,7 @@ var elem: List.Element = List.Element.new(Object.new())
 
 ```
 
-### For Loops: List
-
-```cpp
-
-```
-
-```gdscript
-
-```
-
-(WIP, section below is obsolete until practical example)
+(WIP, section below is obsolete. Keeping temporarily for reference)
 
 ```cpp
 // some_class.h

@@ -9,7 +9,7 @@ C++ is far more explicit and detailed than GDScript. Here are some step-by-step 
 ```
 
 ```gdscript
-# Comments use pound / hash
+# Comments use pound
 ```
 
 ## Class declaration
@@ -23,11 +23,13 @@ class SomeClass {
 };
 ```
 
+Notice that there's no mention of extending another class. Unlike GDScript, C++ can create independent classes that have no dependencies on Godot's systems.
+
 In GDScript, the file *is* the class. If no `extends <type>` is written, it defaults to `Reference`. So, an empty `.gd` file counts as a class.
 
-## Access modifiers
+## Access Modifiers And Basic Inheritance
 
-In C++, external classes can only access properties and methods under certain conditions. By default, they are `private`. The class must explicitly specify `protected` or `public` regions if desired.
+In C++, external classes can only access properties and methods (aka members) under certain conditions. By default, members are `private`. The class must explicitly specify `protected` or `public` regions if desired.
 
 Usually, non-public properties and methods are prefixed with an underscore.
 
@@ -49,6 +51,46 @@ public:
 var _x: int
 var z: int
 ```
+
+In GDScript, every class must extend an existing engine class. It can be done in one of 3 ways:
+
+```gdscript
+extends Node         # an engine class
+extends "my_node.gd" # a file path to another script
+extends MyNode       # the name of a global script class
+```
+
+In every case, the inheriting class gains access to all properties, methods, constants, and signals of the base class with no restrictions.
+
+Here's an example of inheritance in C++:
+
+```cpp
+class BaseClass {
+public:
+    int x;
+};
+class DerivedClass : public BaseClass {
+
+};
+```
+
+The `:` after the class name is C++'s `extends` syntax.
+
+The `BaseClass` is the class name to be inherited.
+
+You'll notice, however, that there is an access modifier applied to it. This communicates how much `DerivedClass` wants to publicize how much it derives from `BaseClass`.
+
+If `DerivedClass` is shy about it, then it may choose to limit how much an external class can access `DerivedClass`'s inherited members from `BaseClass`.
+
+`public` inheritance makes no change to `BaseClass` in `DerivedClass`. *Most of the time*, this is what you will see.
+
+`protected` inheritance converts all of `BaseClass`'s `public` members to `protected` members.
+
+`private` inheritance converts all of `BaseClass`'s `public` and `protected` members to `private` members.
+
+If a modifier is omitted, it defaults to `private`.
+
+For more examples, visit [this StackOverflow page](https://stackoverflow.com/questions/860339/difference-between-private-public-and-protected-inheritance).
 
 ## Symbols: Variables as Memory Locations
 
@@ -220,7 +262,7 @@ int arr[capacity];       // variable with mutable data type, does not compile.
 
 But wait! That can't be all there is, right? GDScript's `Array` can change its capacity. Why is that? Because of the Heap...
 
-## Heap, and Pointers
+## Heap, and Pointers (TODO)
 
 The Heap is a region of memory that exists elsewhere in the computer. Where *exactly* the memory is generally unknown since the operating system micromanages it. An app can request memory from the Heap whenever it wants to at runtime.
 
@@ -240,7 +282,7 @@ The `*` means we have a `uint64_t` (an unsigned 64-bit integer) which stores a m
 
 C++ calls these data types "pointers"
 
-## Method Definitions (Basic)
+## Method Definitions (Basic) (TODO) (MOVE)
 
 In GDScript, a return value's data type and the parameters' data types are optional. In C++, they are required. Because they are required, they go before a parameter's symbol, not after.
 
@@ -349,7 +391,7 @@ A "scope" is a region of code where certain symbols exist.
     # `x` symbol no longer exists
     ```
 
-### Class Scope:
+### Class Scope (TODO)
 
     Symbols which are available throughout a class.
 
@@ -555,6 +597,14 @@ int double_number(Number n) {
 ```
 
 ### Function Overloads (TODO)
+
+```cpp
+
+```
+
+```gdscript
+
+```
 
 ### For Loops: Array (TODO)
 

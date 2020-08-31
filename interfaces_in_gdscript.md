@@ -1,5 +1,7 @@
 # Interfaces In GDScript
 
+## **OBSOLETE: Will be merged into gdscript_to_cpp.md later.**
+
 A practical explanation of interfaces for beginners.
 
 ## Concepts

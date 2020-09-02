@@ -1,6 +1,24 @@
 # Comparing C++ and GDScript Syntax
 
-C++ is far more explicit and detailed than GDScript. Here are some step-by-step comparisons of their syntax.
+## Outline
+
+What you will learn:
+
+Basic C++ concepts/syntax and the fundamentals of a computer program's memory structure.
+
+Expected Knowledge:
+
+GDScript features and syntax.
+
+## Introduction
+
+Key Principles:
+
+1. C++ thinks *everything* is a *number*.
+1. C++ needs to know *exactly* how those numbers are *arranged and used* ahead of time.
+1. C++ is *dumb*. It gives you the tools to painstakingly construct whatever you want and trusts that you know what you are doing.
+
+These will become readily apparent with every concept.
 
 ## Comments
 
@@ -117,7 +135,72 @@ values["x"] = 10
 
 However, for simplicity, most memory address information is hidden in GDScript.
 
-## Copies vs. References
+## Data Types
+
+When a program creates a variable, it needs to know how many bytes each variable is. After all, if variables are sitting next to each other in memory, then the computer needs to know where to write the new values. The location at which to write the next variable's data depends on how much space the preceding variable takes up.
+
+GDScript is dynamic. It is built on Godot's Variant. Variant can store a subset of data types The largest of these is 16 bytes. It combines these 16 bytes with a 4-byte enum to keep track of a data type. Between these 20 bytes, it can...
+
+- assume that every piece of data is at most 20 bytes. Assume all data is that big. Voila, no need to calculate sizes at compile time.
+- freely change data types at a whim.
+    - `int(5)` to `bool(1)`?
+        1. 4-byte `TYPE_INT` -> `TYPE_BOOL`.
+        2. 16-byte 0005 -> 16-byte 0001.
+
+C++ is a statically typed language. Because it is compiled ahead of execution, it must know the exact structure of everything ahead of time. How?
+
+C++ only comprehends numbers. But...
+
+C++ qualifies numbers:
+
+- sizes (bits): 0, 1, 8, 16, 32, 64, 80
+- byte types:
+    - `signed` (default) | `unsigned`
+    - `short` (n >= 16 bits) | `long` (n >= 32 bits)
+    - (default) | `const` (immutable)
+- is it a reference to an existing number? (`&`)
+- is it a memory address? (`*`)
+
+C++ interprets numbers:
+
+void:
+    - keyword: `void`
+    - sizes: 0
+    - represents "I don't know what this is" or "nothing".
+    - cannot create any concrete "void" type.
+- boolean:
+    - keyword: `bool`
+    - sizes: < 8. Compiler defined.
+    - represents 0 or 1.
+- integer:
+    - keyword: `int`
+    - sizes: 16, 32, 64
+    - represents a number.
+    - defaults to signed.
+    - e.g. `int`, `short`, `long`, `long long`
+- character:
+    - keyword: `char`
+    - sizes: 8, 16, 32
+    - represents a code for display instructions.
+- floating-point:
+    - keywords: `float`, `double`
+    - sizes: 32, 64
+    - represents approximations of partial numbers.
+    - inherently imprecise.
+- references:
+    - similar to a hard link (will explore more later)
+- memory addresses:
+    - similar to a soft link (will explore more later)
+
+*Every* data type is mutable by default and can be made immutable by using the `const` keyword.
+
+A function is a memory address marking the starting point of executable instructions. It is therefore a *number*.
+
+A class is a named, sequential list of numbers with various qualifiers and interpretations (Subject to user manipulation).
+
+Inheritance is a named, sequential list of classes (Subject to user manipulation).
+
+## Values vs. References
 
 In GDScript, most all data is "passed by value". Different variables make a copy during assignment.
 
@@ -273,6 +356,12 @@ The good news? You can request a variable amount of data. Also, the memory is no
 The bad news?
 
 
+
+
+> Note: there is some ambiguity surrounding the term "reference".
+>     - is a reference (reference)
+>     - references (reference or pointer)
+>     - pass by reference (reference or pointer)
 
 
 

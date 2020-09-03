@@ -22,17 +22,32 @@ These will become readily apparent with every concept.
 
 ## Comments
 
+C++:
+
 ```cpp
 // Comments use double-slashes
+int x; // a comment after a statement
+/* This is a
+   multiline
+   comment */
 ```
+
+GDScript:
 
 ```gdscript
 # Comments use pound
+var x # a comment after a statement
+"""
+A multiline comment syntax doesn't exist.
+Use docstrings instead!
+"""
 ```
 
 ## Class declaration
 
-In C++, it isn't enough to have a file. You must explicitly declare the existence of the class using the `class` keyword, followed by its name.
+In GDScript, the starting point of knowledge is class declarations. Every `.gd` file declares the existence of a class, even if it is empty (inheritance defaults to `Reference`).
+
+In C++, it isn't enough to have a file. You must explicitly declare the existence of the class using the `class` keyword, followed by its name, the block of code associated with the class, and a termination semicolon.
 
 ```cpp
 // some_class.h
@@ -41,15 +56,13 @@ class SomeClass {
 };
 ```
 
-Notice that there's no mention of extending another class. Unlike GDScript, C++ can create independent classes that have no dependencies on Godot's systems.
-
-In GDScript, the file *is* the class. If no `extends <type>` is written, it defaults to `Reference`. So, an empty `.gd` file counts as a class.
+Notice the lack of inheritance. Unlike GDScript, C++ classes can exist independently.
 
 ## Access Modifiers And Basic Inheritance
 
-In C++, external classes can only access properties and methods (aka members) under certain conditions. By default, members are `private`. The class must explicitly specify `protected` or `public` regions if desired.
+In C++, external classes can only access properties and methods (aka members) under certain conditions. By default, members are `private`, i.e. hidden. The class must explicitly specify a `protected` or `public` access level for a region of code if desired.
 
-Usually, non-public properties and methods are prefixed with an underscore.
+By convention, non-public properties and methods are prefixed with an underscore.
 
 ```cpp
 // some_class.h
@@ -78,7 +91,7 @@ extends "my_node.gd" # a file path to another script
 extends MyNode       # the name of a global script class
 ```
 
-In every case, the inheriting class gains access to all properties, methods, constants, and signals of the base class with no restrictions.
+In every case, the inheriting class gains unrestricted access to all of the base class's content.
 
 Here's an example of inheritance in C++:
 
@@ -96,9 +109,7 @@ The `:` after the class name is C++'s `extends` syntax.
 
 The `BaseClass` is the class name to be inherited.
 
-You'll notice, however, that there is an access modifier applied to it. This communicates how much `DerivedClass` wants to publicize how much it derives from `BaseClass`.
-
-If `DerivedClass` is shy about it, then it may choose to limit how much an external class can access `DerivedClass`'s inherited members from `BaseClass`.
+Inheriting classes apply an access modifier to their base class. This imposes a limitation on the access levels inherited by the base class.
 
 `public` inheritance makes no change to `BaseClass` in `DerivedClass`. *Most of the time*, this is what you will see.
 
@@ -107,6 +118,19 @@ If `DerivedClass` is shy about it, then it may choose to limit how much an exter
 `private` inheritance converts all of `BaseClass`'s `public` and `protected` members to `private` members.
 
 If a modifier is omitted, it defaults to `private`.
+
+C++ *also* has a `struct` keyword.
+
+```cpp
+struct BaseClass {
+    int x;
+};
+struct DerivedClass : BaseClass {
+
+}
+```
+
+The only difference between a `class` and a `struct` is the default access level which is `public` rather than `private`. Therefore, the two previous code segments are functionally equivalent.
 
 For more examples, visit [this StackOverflow page](https://stackoverflow.com/questions/860339/difference-between-private-public-and-protected-inheritance).
 
@@ -119,37 +143,35 @@ extends Node
 var x = 0 # `x` is a symbol
 ```
 
-All languages have the concept of a "symbol table" which it uses to track symbol locations.
+All languages have the concept of a "symbol table". It tracks each symbol's memory location.
 
-A language's internals might look something like a Dictionary storing strings mapped to their memory locations:
+A language's internal symbol table might look something like a string-to-int Dictionary:
 
 ```gdscript
 var symbols = {}
-var values = {}
 
 # do `var x = 10` in a script
 
-symbols["x"] = 1048489292048
-values["x"] = 10
+symbols["x"] = 10484892920
 ```
 
 However, for simplicity, most memory address information is hidden in GDScript.
 
-## Data Types
+## Dynamic Variant vs Static Data Types
 
 When a program creates a variable, it needs to know how many bytes each variable is. After all, if variables are sitting next to each other in memory, then the computer needs to know where to write the new values. The location at which to write the next variable's data depends on how much space the preceding variable takes up.
 
-GDScript is dynamic. It is built on Godot's Variant. Variant can store a subset of data types The largest of these is 16 bytes. It combines these 16 bytes with a 4-byte enum to keep track of a data type. Between these 20 bytes, it can...
+GDScript is dynamic. It is built on Godot's Variant. Variant can store a subset of data types. The largest of these is 16 bytes. It combines these 16 bytes with a 4-byte enum to keep track of a data type. With these combined 20 bytes, it has some tricks available to it:
 
-- assume that every piece of data is at most 20 bytes. Assume all data is that big. Voila, no need to calculate sizes at compile time.
-- freely change data types at a whim.
+- It assumes that every piece of data is at most 20 bytes. Therefore, just give every piece of data 20 bytes. No need to calculate sizes at compile time.
+- Freely change data types at a whim.
     - `int(5)` to `bool(1)`?
         1. 4-byte `TYPE_INT` -> `TYPE_BOOL`.
-        2. 16-byte 0005 -> 16-byte 0001.
+        2. 16-byte 0x0000000000000005 -> 16-byte 0x0000000000000001.
 
 C++ is a statically typed language. Because it is compiled ahead of execution, it must know the exact structure of everything ahead of time. How?
 
-C++ only comprehends numbers. But...
+C++ only comprehends numbers but applies them in many ways...
 
 C++ qualifies numbers:
 
@@ -157,52 +179,83 @@ C++ qualifies numbers:
 - byte types:
     - `signed` (default) | `unsigned`
     - `short` (n >= 16 bits) | `long` (n >= 32 bits)
-    - (default) | `const` (immutable)
+    - (default mutability) | `const` (immutable) | `mutable` (forced mutability)
 - is it a reference to an existing number? (`&`)
 - is it a memory address? (`*`)
 
 C++ interprets numbers:
 
-void:
-    - keyword: `void`
-    - sizes: 0
-    - represents "I don't know what this is" or "nothing".
-    - cannot create any concrete "void" type.
-- boolean:
-    - keyword: `bool`
-    - sizes: < 8. Compiler defined.
-    - represents 0 or 1.
-- integer:
-    - keyword: `int`
-    - sizes: 16, 32, 64
-    - represents a number.
-    - defaults to signed.
-    - e.g. `int`, `short`, `long`, `long long`
-- character:
-    - keyword: `char`
-    - sizes: 8, 16, 32
-    - represents a code for display instructions.
-- floating-point:
-    - keywords: `float`, `double`
-    - sizes: 32, 64
-    - represents approximations of partial numbers.
-    - inherently imprecise.
-- references:
-    - similar to a hard link (will explore more later)
-- memory addresses:
-    - similar to a soft link (will explore more later)
+> Note: size with '?' means it is compiler dependent.
 
-*Every* data type is mutable by default and can be made immutable by using the `const` keyword.
+- void:
+    - Keyword: `void`
+    - Sizes: 0
+    - Represents "I don't know what this is" or "nothing".
+    - Cannot create any concrete "void" type.
+- boolean:
+    - Keyword: `bool`
+    - Sizes: < 8?.
+    - Represents 0 or 1.
+- character:
+    - Keyword: `short char`, `char`, `long char`
+    - Sizes: 8, 16, 32
+    - Represents a code for display instructions.
+    - Uses bits to directly count numbers, more or less.
+- integer:
+    - Keyword: `short int`, `int`, `long int` (32/64?), `long long int`
+    - Sizes: 16, 32, 64
+    - Represents a number.
+    - Uses bits to directly count numbers, more or less.
+    - Defaults to signed.
+    - Example: `int`, `short`, `long`, `long long`
+- floating-point:
+    - Keywords: `float`, `double`
+    - Sizes: 32, 64
+    - Represents approximations of partial numbers.
+    - Uses a bit for sign, some bits for value, and some bits for location on number line.
+    - Limited bits available for number representation. Inherently imprecise.
+- references:
+    - Similar to a hard link (will explore more later)
+- memory addresses:
+    - Similar to a soft link (will explore more later)
+
+Data types are mutable by default.
+Adding `const` makes a data type immutable.
+`const` classes and structs can whitelist members to remain mutable using the `mutable` qualifier.
 
 A function is a memory address marking the starting point of executable instructions. It is therefore a *number*.
 
-A class is a named, sequential list of numbers with various qualifiers and interpretations (Subject to user manipulation).
+A class or struct is a named, sequential list of varying types of numbers.
 
-Inheritance is a named, sequential list of classes (Subject to user manipulation).
+Inheritance is a named, sequential list of classes.
+
+```cpp
+struct VerifiablePoint {
+    bool isVerified;
+    int x;
+    int y;
+}
+```
+
+Depending on the compiler, an instance of `VerifiablePoint` in memory could look like this:
+
+```cpp
+VerifiablePoint p;
+p.isVerified = false
+p.x = 10
+p.y = 4
+
+// memory   : value
+// -----------------
+// 00000000 : 0x0000
+// 00000001 : 0x000A
+// 00000005 : 0x0004
+// 00000009 : 
+```
 
 ## Values vs. References
 
-In GDScript, most all data is "passed by value". Different variables make a copy during assignment.
+In GDScript, most all data is "passed by value". These variables make a copy during assignment.
 
 ```gdscript
 var v1 = Vector2()
@@ -211,7 +264,7 @@ v1.x = 10
 # v2.x is still 0
 ```
 
-However, every Object, Array, and Dictionary is "passed by reference". Different variables "reference" the same data.
+However, every Object, Array, and Dictionary is "passed by reference". These variables create a shared "reference" to the same data during assignment.
 
 ```gdscript
 var n1 = Node.new()
@@ -229,14 +282,27 @@ SomeClass s1; // data type is SomeClass, a value
 SomeClass &s2 = s1; // data type is SomeClass&, a reference
 ```
 
-The `&` modifies the type to be a constant reference to some SomeClass instance. To be specific, `s2` is actually an unsigned integer storing the memory address of `s1`. By passing around the memory address, C++ can make *anything* into a reference, including integers.
+The `&` modifies the type to be a reference to a SomeClass instance. C++ allows you to create these references for *any* data type, including integers.
 
 ```cpp
 int x = 0;
-int &y = x; // some arbitrary memory address, like 184728300
+int &y = x; // references x directly
 ```
 
-However, as mentioned, these 'reference' data types are *constant*. You can't make them reference something else once they've been initialized! Why is that? Because of the Stack...
+`&` creates a reference to an *existing* value. It does not store the value's memory address, but it also does not work with literals which have no memory address.
+
+```cpp
+int &x = 0; // error! References must be assigned an addressable value
+```
+
+References are *constant*. You can't make them reference something else once they've been initialized! Why is that? Because of the Stack...
+
+```cpp
+int x = 0;
+int y = 0;
+int &z = x;
+z = &y; // error! References cannot be reassigned.
+```
 
 ## The Stack
 

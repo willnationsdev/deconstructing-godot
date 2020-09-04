@@ -18,8 +18,6 @@ Key Principles:
 1. C++ needs to know *exactly* how those numbers are *arranged and used* ahead of time.
 1. C++ is *dumb*. It gives you the tools to painstakingly construct whatever you want and trusts that you know what you are doing.
 
-These will become readily apparent with every concept.
-
 ## Comments
 
 C++:
@@ -47,7 +45,7 @@ Use docstrings instead!
 
 In GDScript, the starting point of knowledge is class declarations. Every `.gd` file declares the existence of a class, even if it is empty (inheritance defaults to `Reference`).
 
-In C++, it isn't enough to have a file. You must explicitly declare the existence of the class using the `class` keyword, followed by its name, the block of code associated with the class, and a termination semicolon.
+In C++, it isn't enough to have a file. You must explicitly declare the existence of the class using the `class` keyword, followed by its name, the block of code associated with the class, and a terminating semicolon.
 
 ```cpp
 // some_class.h
@@ -150,7 +148,7 @@ A language's internal symbol table might look something like a string-to-int Dic
 ```gdscript
 var symbols = {}
 
-# do `var x = 10` in a script
+# `var x = 10`
 
 symbols["x"] = 10484892920
 ```
@@ -159,75 +157,81 @@ However, for simplicity, most memory address information is hidden in GDScript.
 
 ## Dynamic Variant vs Static Data Types
 
-When a program creates a variable, it needs to know how many bytes each variable is. After all, if variables are sitting next to each other in memory, then the computer needs to know where to write the new values. The location at which to write the next variable's data depends on how much space the preceding variable takes up.
+When a program creates a variable, it needs to know how many bytes each variable is. When declaring variables, the program writes their values into memory sequentially, beside one another. However, how it does so is determined by data types.
 
-GDScript is dynamic. It is built on Godot's Variant. Variant can store a subset of data types. The largest of these is 16 bytes. It combines these 16 bytes with a 4-byte enum to keep track of a data type. With these combined 20 bytes, it has some tricks available to it:
+Data types have a *byte size* which can affect the byte offset between variables.
 
-- It assumes that every piece of data is at most 20 bytes. Therefore, just give every piece of data 20 bytes. No need to calculate sizes at compile time.
-- Freely change data types at a whim.
+Data types tell the computer *how* to write their data to memory.
+
+### GDScript
+
+Now, GDScript is dynamic. How does it achieve this? It is built on Godot's Variant. Variant can store a subset of data types. The largest of these is 16 bytes. It combines these 16 bytes with a 4-byte enum to keep track of a data type. With these combined 20 bytes, it has some tricks available to it:
+
+- It stores a *size* of 20 bytes for everything, even if the data needs less than that. No need to calculate sizes at compile time.
+- It freely *interprets* data types on a whim based on the enum value.
     - `int(5)` to `bool(1)`?
         1. 4-byte `TYPE_INT` -> `TYPE_BOOL`.
         2. 16-byte 0x0000000000000005 -> 16-byte 0x0000000000000001.
 
-C++ is a statically typed language. Because it is compiled ahead of execution, it must know the exact structure of everything ahead of time. How?
+> See [@GlobalScope docs](https://docs.godotengine.org/en/latest/classes/class_@globalscope.html) for the `Variant.Type` enum to see all available types.
+
+### C++ Data Types
+
+C++ is a natively-compiled, statically-typed language. Because it is compiled ahead of execution for a native target, it must know the exact structure of everything ahead of time. How?
 
 C++ only comprehends numbers but applies them in many ways...
 
 C++ qualifies numbers:
 
-- sizes (bits): 0, 1, 8, 16, 32, 64, 80
-- byte types:
-    - `signed` (default) | `unsigned`
-    - `short` (n >= 16 bits) | `long` (n >= 32 bits)
-    - (default mutability) | `const` (immutable) | `mutable` (forced mutability)
-- is it a reference to an existing number? (`&`)
-- is it a memory address? (`*`)
+- sizes (usually 8, 16, 32, 64)
+- signage
+- byte size qualifiers (`short`, `long`)
+- mutability (default true, `const` false)
+- reference to existing number (`&`)?
+- memory address (`*`)?
 
-C++ interprets numbers:
+C++ interprets numbers (a "data type"):
 
-> Note: size with '?' means it is compiler dependent.
+> Note: Byte sizes are not final! Can be adjusted with size qualifiers and may be compiler dependent.
 
-- void:
-    - Keyword: `void`
-    - Sizes: 0
-    - Represents "I don't know what this is" or "nothing".
-    - Cannot create any concrete "void" type.
-- boolean:
-    - Keyword: `bool`
-    - Sizes: < 8?.
-    - Represents 0 or 1.
-- character:
-    - Keyword: `short char`, `char`, `long char`
-    - Sizes: 8, 16, 32
-    - Represents a code for display instructions.
-    - Uses bits to directly count numbers, more or less.
-- integer:
-    - Keyword: `short int`, `int`, `long int` (32/64?), `long long int`
-    - Sizes: 16, 32, 64
-    - Represents a number.
-    - Uses bits to directly count numbers, more or less.
-    - Defaults to signed.
-    - Example: `int`, `short`, `long`, `long long`
-- floating-point:
-    - Keywords: `float`, `double`
-    - Sizes: 32, 64
-    - Represents approximations of partial numbers.
-    - Uses a bit for sign, some bits for value, and some bits for location on number line.
-    - Limited bits available for number representation. Inherently imprecise.
-- references:
-    - Similar to a hard link (will explore more later)
-- memory addresses:
-    - Similar to a soft link (will explore more later)
+> C++ believes that *every* type can be boolean (is it zero?). There are many values of 0x0000 which can be expressed as different data types. See the 'False' sections below.
 
-Data types are mutable by default.
-Adding `const` makes a data type immutable.
-`const` classes and structs can whitelist members to remain mutable using the `mutable` qualifier.
+- void: `void` (0 bytes)
+    - Nothing/Unknown.
+- boolean: `bool` (1 byte)
+    - Truth-ness.
+    - True: `true`
+    - False: `false`
+- integer: `int` (4 bytes)
+    - Positive or negative whole numbers.
+    - True: `1000`, `-3`
+    - False: `0`
+- character: `char` (1 byte)
+    - Letters to be displayed **or** *small* positive or negative whole numbers.
+    - True: `'a'`, `'\n'`
+    - False: `'\0'` ("null terminator")
+- floating-point: `float` (4 bytes)
+    - Imprecise representations of fractions and decimals. Leave a margin of error in comparisons for consistency.
+    - True: `3.14`, `-0.0000001`
+    - False: `0.0`
+- pointer: `*` (4 bytes x32 | 8 bytes x64)
+    - Stores a memory address to a specific type
+    - True: `504891358`
+    - False: `NULL` or, after C++11, `nullptr`
 
-A function is a memory address marking the starting point of executable instructions. It is therefore a *number*.
+> See the [C++ reference](https://en.cppreference.com/w/cpp/language/types) for a more detailed breakdown type representations.
+
+Computers consider data types with distinct qualifiers to be *completely different data types*.
+
+A function marks the starting memory location of executable instructions. It has a *number*.
 
 A class or struct is a named, sequential list of varying types of numbers.
 
-Inheritance is a named, sequential list of classes.
+Inheritance is more or less a named, sequential list of classes.
+
+> C++ supports *multiple inheritance*. This can lead to inheriting duplicate classes. See the [Diamond Problem](https://www.geeksforgeeks.org/multiple-inheritance-in-c/) for more information.
+
+### C++ Example
 
 ```cpp
 struct VerifiablePoint {
@@ -252,6 +256,14 @@ p.y = 4
 // 00000005 : 0x0004
 // 00000009 : 
 ```
+
+## Control Flow: if/else
+
+## Control Flow: switch/case
+
+## Control Flow: while/do-while
+
+## Control Flow: for
 
 ## Values vs. References
 
@@ -306,7 +318,17 @@ z = &y; // error! References cannot be reassigned.
 
 ## The Stack
 
-Whenever you enter a new block of code, the computer sets aside a region of memory for you to use in that block called the Stack. In GDScript, every variable is 20 bytes of memory (we'll get into why another time). So...
+Whenever you use a function (`void func() { ... }`) or control flow (`if/else/for/do/while/switch/case { ... }`)
+
+```cpp
+<something?> {
+
+}
+```
+
+
+
+Whenever you enter a new block of code, the computer sets aside a region of memory for you to use in that block called the Stack. As we discussed earlier, every GDScript variable is 20 bytes, so...
 
 ```gdscript
 var x = 1

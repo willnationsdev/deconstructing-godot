@@ -99,7 +99,7 @@ Every language's classes have "access levels". These determine whether content i
     - `public`: all content accessible
     - `struct`: class that defaults to `public` (detailed below)
 
-Syntax `<keyword><colon>`. Align keyword with class declaration. Affected content indented on newlines.
+Syntax: `<keyword><colon>`. Align keyword with class declaration. Affected content indented on newlines.
 
 ```cpp
 // some_class.h
@@ -141,7 +141,7 @@ class DerivedClass : public BaseClass {
     - `private`:   `BaseClass`'s `public` and `protected` members -> `private` members.
 - If a modifier is omitted, it defaults to `private`.
 
-C++ *also* has a `struct` keyword.
+C++ *also* has a `struct` keyword. `struct`s default to `public` access for content and inheritance. Above code snippet is equivalent.
 
 ```cpp
 struct BaseClass {
@@ -151,8 +151,6 @@ struct DerivedClass : BaseClass {
 
 }
 ```
-
-`struct`s default to `public` access for content and inheritance. Above code snippet is equivalent.
 
 For more examples, visit [this StackOverflow page](https://stackoverflow.com/questions/860339/difference-between-private-public-and-protected-inheritance).
 
@@ -199,11 +197,12 @@ For more examples, visit [this StackOverflow page](https://stackoverflow.com/que
         };
         ```
 
-        Interconnected classes. Use 1, you use them all.
+        Interconnected classes. Use one, you use them all.
 
     - Use inner classes if require custom data structures for class
 
         ```cpp
+        // `/scene/resources/tile_set.h`
         class TileSet : public Resource {
         public:
             // Belongs to TileSet, but...

@@ -187,7 +187,7 @@ For more examples, visit [this StackOverflow page](https://stackoverflow.com/que
             // ScriptLanguage instance
             // ScriptInstance instance
         };
-        class ScriptInstance : public Button {
+        class ScriptInstance {
             // Object instance
             // Script instance
         };

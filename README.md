@@ -4,7 +4,7 @@ A gradual introduction to Godot Engine's source code for those with some GDScrip
 
 If you would like to suggest a topic, please [open an Issue](https://github.com/willnationsdev/deconstructing-godot/issues/new).
 
-If you are a GDScript user and are uncomfortable with C++, you may want to first [learn C++ using your knowledge of GDScript](gdscript_to_cpp.md) (WIP). A supplemental video series on the topic can be found [here]() (TODO).
+If you are a GDScript user and are uncomfortable with C++, you may want to first [learn C++ using your knowledge of GDScript](gdscript_to_cpp/gdscript_to_cpp.md) (WIP). A supplemental video series on the topic can be found [here]() (TODO).
 
 If you found the content educational, please consider becoming my sponsor using the button above. I spend dozens of hours preparing the lessons through research, write ups, recording videos, and managing the channel. Regardless, it's all worth it if it helps enlighten viewers to the wonders of Godot!
 

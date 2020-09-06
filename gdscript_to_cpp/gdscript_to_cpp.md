@@ -1,22 +1,19 @@
 # Comparing C++ and GDScript Syntax
 
-## Outline
+This document contains my full notes on each topic. As episodes release, a subset of this document will be converted into a video-friendly format for presentation and review. You can think of this as a Work-In-Progress until individual "complete" episodes are published with their supplemental video material in the `/gdscript_to-cpp/episodes/` folder.
 
-What you will learn:
+- Course Learning:
+    - C++ concepts/syntax
+    - Basic program memory structure
 
-Basic C++ concepts/syntax and the fundamentals of a computer program's memory structure.
+- Course Requirements:
+    - GDScript features and syntax
 
-Expected Knowledge:
-
-GDScript features and syntax.
-
-## Introduction
-
-Key Principles:
+## Key Principles:
 
 1. C++ thinks *everything* is a *number*.
 1. C++ needs to know *exactly* how those numbers are *arranged and used* ahead of time.
-1. C++ is *dumb*. It gives you the tools to painstakingly construct whatever you want and trusts that you know what you are doing.
+1. C++ is *dumb*. It trusts you to painstakingly build whatever you want with almost no supervision.
 
 ## Comments
 

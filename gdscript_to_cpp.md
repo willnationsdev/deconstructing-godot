@@ -257,14 +257,6 @@ p.y = 4
 // 00000009 : 
 ```
 
-## Control Flow: if/else
-
-## Control Flow: switch/case
-
-## Control Flow: while/do-while
-
-## Control Flow: for
-
 ## Values vs. References
 
 In GDScript, most all data is "passed by value". These variables make a copy during assignment.
@@ -586,7 +578,7 @@ A "scope" is a region of code where certain symbols exist.
         x += 10 # also refers to `x` property
     ```
 
-## Global Scope
+### Global Scope
 
 Symbols which are available everywhere.
 
@@ -763,7 +755,7 @@ int double_number(Number n) {
 }
 ```
 
-### Virtuals, Abstract Classes, and Overrides (TODO)
+## Virtuals, Abstract Classes, and Overrides (TODO)
 
 ```cpp
 
@@ -773,7 +765,7 @@ int double_number(Number n) {
 
 ```
 
-### Function Overloads (TODO)
+## Function Overloads (TODO)
 
 ```cpp
 
@@ -783,7 +775,13 @@ int double_number(Number n) {
 
 ```
 
-### For Loops: Array (TODO)
+## Control Flow: If/Else (TODO)
+
+## Control Flow: Switch/Case (TODO)
+
+## Control Flow: While/Do-While Loop (TODO)
+
+## Control Flow: For Loop (Array) (TODO)
 
 ```cpp
 
@@ -793,7 +791,7 @@ int double_number(Number n) {
 
 ```
 
-### For Loops: Vector (TODO)
+## Control Flow: For Loop (Vector) (TODO)
 
 ```cpp
 
@@ -803,7 +801,7 @@ int double_number(Number n) {
 
 ```
 
-### For Loops: List (TODO)
+## ControlFlow: For Loop (List) (TODO)
 
 ```cpp
 

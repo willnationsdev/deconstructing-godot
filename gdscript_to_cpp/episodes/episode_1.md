@@ -31,7 +31,7 @@ GDScript:
 # Comments use pound
 var x # a comment after a statement
 """
-A multiline comment syntax doesn't exist.
+No multiline comment syntax.
 Use docstrings instead!
 """
 ```
@@ -39,17 +39,25 @@ Use docstrings instead!
 ## Class declaration
 
 - GDScript:
-    - file == class, implicit declaration
+    - File == class, implicit declaration
 
         ```gdscript
-        extends Node         # an engine class
-        extends "my_node.gd" # a file path to another script
-        extends MyNode       # the name of a global script class
+        # some_class.gd (even without this comment)
         ```
 
-    - must extend an engine class. No `extends` == `Reference`.
+    - Must extend an engine `Object` class.
 
-        These two classes are identical in their inheritance/structure
+        How To...
+
+        ```gdscript
+        extends Node         # An engine class (basetype).
+        extends "my_node.gd" # A script file path (path->load->basetype).
+        extends MyNode       # Global script class (name->path->load->basetype).
+
+        extends Array        # Error! Array is not an Object!
+        ```
+
+        No `extends` == `Reference`. Identical types below.
 
         ```gdscript
         # ref1.gd
@@ -59,9 +67,9 @@ Use docstrings instead!
         ```
 
 - C++:
-    - file != class, explicit declaration
+    - File != class, explicit declaration
     - N top-level classes per file
-    - independently inheritable
+    - Independently inheritable
 
 Syntax: `<keyword> <identifier> <block> <semicolon>`
 
@@ -75,15 +83,21 @@ class AnotherClass {
 };
 ```
 
-> Note: *Usually*, if you have curly braces, then you WILL NOT need a semicolon. Classes are a special case.
+Usually, `{ ... }` OR `;`, not both. Classes are special. [See more](https://stackoverflow.com/questions/1783465/why-must-i-put-a-semicolon-at-the-end-of-class-declaration-in-c/1783509).
 
 ## Access Modifiers And Basic Inheritance
 
-Every language's classes have "access levels". These determine whether content is visible to another class. Example: "public", "private", etc. By convention, non-public properties and methods are prefixed with an underscore.
+All Programming Languages -> Access Levels.
+
+Access Level = can do `obj.<thing>`.
+
+Types: `public`, `protected`, `private`.
+
+Convention: non-`public` content has `_` prefix.
 
 - GDScript:
 
-    - public: all content accessible (default) (no keyword, assumed).
+    - `public`: all content accessible (default) (no keyword, assumed).
 
         Naming convention communicates intent.
 
@@ -94,10 +108,10 @@ Every language's classes have "access levels". These determine whether content i
         ```
 
 - C++:
+
     - `private`: inaccessible (default)
-    - `protected`: accessible only for inherited classes
+    - `protected`: inherited classes only
     - `public`: all content accessible
-    - `struct`: class that defaults to `public` (detailed below)
 
 Syntax: `<keyword><colon>`. Align keyword with class declaration. Affected content indented on newlines.
 

@@ -1,4 +1,4 @@
-# GDScript to C++ Episode 1: Comments and Classes
+# GDScript to C++ Episode 1: Classes and Access Modifiers
 
 - Course Learning:
     - C++ concepts/syntax
@@ -36,7 +36,9 @@ Use docstrings instead!
 """
 ```
 
-## Class declaration
+## Class Declaration
+
+Declaration = something exists (any language)
 
 - GDScript:
     - File == class, implicit declaration
@@ -50,8 +52,8 @@ Use docstrings instead!
         How To...
 
         ```gdscript
-        extends Node         # An engine class (basetype).
-        extends "my_node.gd" # A script file path (path->load->basetype).
+        extends Node         # Engine class (basetype).
+        extends "my_node.gd" # Script file path (path->load->basetype).
         extends MyNode       # Global script class (name->path->load->basetype).
 
         extends Array        # Error! Array is not an Object!
@@ -83,13 +85,13 @@ class AnotherClass {
 };
 ```
 
-Usually, `{ ... }` OR `;`, not both. Classes are special. [See more](https://stackoverflow.com/questions/1783465/why-must-i-put-a-semicolon-at-the-end-of-class-declaration-in-c/1783509).
+> Usually, `{ ... }` OR `;`, not both. Classes are special. [See more](https://stackoverflow.com/questions/1783465/why-must-i-put-a-semicolon-at-the-end-of-class-declaration-in-c/1783509).
 
 ## Access Modifiers And Basic Inheritance
 
-All Programming Languages -> Access Levels.
+All programming languages have access levels.
 
-Access Level = can do `obj.<thing>`.
+"Access Level" == can do `obj.<something>`.
 
 Types: `public`, `protected`, `private`.
 
@@ -103,7 +105,7 @@ Convention: non-`public` content has `_` prefix.
 
         ```gdscript
         # some_class.gd
-        var _x: int # "private", but really public
+        var _x: int # "private" or "protected", but really public
         var z: int  # public
         ```
 
@@ -111,7 +113,7 @@ Convention: non-`public` content has `_` prefix.
 
     - `private`: inaccessible (default)
     - `protected`: inherited classes only
-    - `public`: all content accessible
+    - `public`: all accessible
 
 Syntax: `<keyword><colon>`. Align keyword with class declaration. Affected content indented on newlines.
 
@@ -135,7 +137,7 @@ int c; // BAD, content not indented
 };
 ```
 
-C++ Inheritance:
+## C++ Inheritance With Access Modifiers
 
 ```cpp
 class BaseClass {
@@ -147,17 +149,39 @@ class DerivedClass : public BaseClass {
 };
 ```
 
-- `:` == GDScript `extends`.
-- Only inherit by typename (not file).
-- Inherited with access modifier. Imposes limits on inheritance of base class.
-    - `public`: No change to `BaseClass` in `DerivedClass`. *Most of the time*, this is what you will see.
+- C++ `:` == GDScript `extends`.
+- inherit typename (not file)
+- Inheritance access modifiers: Imposes limits on inheritance of base class.
+    - `public`: No change to `BaseClass` in `DerivedClass`.
     - `protected`: `BaseClass`'s `public` members -> `protected` members.
     - `private`:   `BaseClass`'s `public` and `protected` members -> `private` members.
-- If a modifier is omitted, it defaults to `private`.
-
-C++ *also* has a `struct` keyword. `struct`s default to `public` access for content and inheritance. Above code snippet is equivalent.
+- If you omit a modifier, it defaults to `private`.
 
 ```cpp
+class Base {
+private:
+    int _x;
+protected:
+    int _y;
+public:
+    int z;
+};
+class Private : private Base {}; // _x/_y/z private
+class Protected : protected Base {}; // _x private, _y/z protected
+class Public : public Base {}; // same as Base
+```
+
+C++ *also* has a `struct` keyword. `struct` == `class`, but default is `public`.
+
+```cpp
+class BaseClass {
+public:
+    int x;
+}
+class DerivedClass : public BaseClass {
+
+}
+// equal to:
 struct BaseClass {
     int x;
 };
@@ -166,13 +190,14 @@ struct DerivedClass : BaseClass {
 }
 ```
 
-For more examples, visit [this StackOverflow page](https://stackoverflow.com/questions/860339/difference-between-private-public-and-protected-inheritance).
+> Note: In other languages, `struct` is usually something else.
 
 ## Multiple Classes Per File
 
 - GDScript:
 
-    - Not possible. Always 1 top-level class. Can have nested classes ("class constants" via `class` keyword)
+    - Always 1 top-level class.
+    - Supports inner classes ("class constants" via `class` keyword).
 
         ```gdscript
         # some_class.gd
@@ -189,47 +214,46 @@ For more examples, visit [this StackOverflow page](https://stackoverflow.com/que
         ```
 
 - C++:
-    - Be careful, ~ "bad practice".
-    - Would it make sense to include one class and not the other?
+    - Supports inner classes.
+    - Multiple scripts? Be careful, ~ "bad practice". Allowances...
+        - Use one and not others? No. Interconnected classes. Use one == all.
 
-        ```cpp
-        // `/core/script_language.h`
-        class ScriptServer {
-            // ScriptLanguage array
-        };
-        class Script : public Resource {
-            // ScriptLanguage instance
-            // ScriptInstance instance
-        };
-        class ScriptInstance {
-            // Object instance
-            // Script instance
-        };
-        class ScriptLanguage {
-            // Can generate Script template
-            // Can debug ScriptInstance
-        };
-        ```
-
-        Interconnected classes. Use one, you use them all.
-
-    - Use inner classes if require custom data structures for class
-
-        ```cpp
-        // `/scene/resources/tile_set.h`
-        class TileSet : public Resource {
-        public:
-            // Belongs to TileSet, but...
-            // - is built by TileSetEditorPlugin.
-            // - is accessed by TileMap for rendering calculations.
-            // Passed to TileSet for configuring TileData instances.
-            struct ShapeData {
-                // dimensions, position, etc.
+            ```cpp
+            // `/core/script_language.h`
+            class ScriptServer {
+                // ScriptLanguage array
             };
-        private:
-            // Managed internally by TileSet. Holds all data about a tile.
-            struct TileData {
-                // ShapeData array, name, collision/occlusion/navigation polygon
+            class Script : public Resource {
+                // ScriptLanguage instance
+                // ScriptInstance instance
             };
-        };
-        ```
+            class ScriptInstance {
+                // Object instance
+                // Script instance
+            };
+            class ScriptLanguage {
+                // Can generate Script template
+                // Can debug ScriptInstance
+            };
+            ```
+
+        - Use inner classes if require custom data structures for class
+
+            ```cpp
+            // `/scene/resources/tile_set.h`
+            class TileSet : public Resource {
+            public:
+                // Belongs to TileSet, but...
+                // - is built by TileSetEditorPlugin.
+                // - is accessed by TileMap for rendering calculations.
+                // Passed to TileSet for configuring TileData instances.
+                struct ShapeData {
+                    // dimensions, position, etc.
+                };
+            private:
+                // Managed internally by TileSet. Holds all data about a tile.
+                struct TileData {
+                    // ShapeData array, name, collision/occlusion/navigation polygon
+                };
+            };
+            ```

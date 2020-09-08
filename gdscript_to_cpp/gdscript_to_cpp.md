@@ -53,9 +53,11 @@ class SomeClass {
 
 Notice the lack of inheritance. Unlike GDScript, C++ classes can exist independently.
 
+> Usually, a declaration (property, method, control flow, whatever) will use `{ ... }` OR `;`, but not both. Classes are special. [See more](https://stackoverflow.com/questions/1783465/why-must-i-put-a-semicolon-at-the-end-of-class-declaration-in-c/1783509).
+
 ## Access Modifiers And Basic Inheritance
 
-In C++, external classes can only access properties and methods (aka members) under certain conditions. By default, members are `private`, i.e. hidden. The class must explicitly specify a `protected` or `public` access level for a region of code if desired.
+In C++, external classes can only access properties and methods (aka members) under certain conditions. By default, members are hidden under a `private` access modifier. To expose members, the class must explicitly specify an alternative access modifier. `protected` permits only inherited contexts. `public` permits all contexts.
 
 By convention, non-public properties and methods are prefixed with an underscore.
 

@@ -250,16 +250,16 @@ struct DerivedClass : BaseClass {
             class TileSet : public Resource {
             public:
                 // Belongs to TileSet, but...
-                // - is built by TileSetEditorPlugin.
-                // - is accessed by TileMap for rendering calculations.
-                // Passed to TileSet for configuring TileData instances.
+                // - TileSetEditorPlugin creates them *for* TileSet
+                //     - Passes to TileSet to create internal TileData instances.
+                // - TileMap accesses them for rendering calculations.
                 struct ShapeData {
                     // dimensions, position, etc.
                 };
             private:
-                // Managed internally by TileSet. Holds all data about a tile.
+                // Managed internally by TileSet. Holds all data for a tile.
                 struct TileData {
-                    // ShapeData array, name, collision/occlusion/navigation polygon
+                    // ShapeData array
                 };
             };
             ```

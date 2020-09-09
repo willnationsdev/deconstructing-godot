@@ -137,6 +137,15 @@ int c; // BAD, content not indented
 };
 ```
 
+Classes default to `private` access if you omit an access modifier.
+
+```cpp
+// some_class.h
+class SomeClass {
+    int _x; // private
+};
+```
+
 ## C++ Inheritance With Access Modifiers
 
 ```cpp
@@ -202,15 +211,12 @@ struct DerivedClass : BaseClass {
         ```gdscript
         # some_class.gd
         extends Reference
-        class InnerClassA:
+        class MyInnerClass:
             extends Node
-        class InnerClassB extends KinematicBody2D:
-            pass
         
         # usage
         const SomeClass = preload("some_class.gd")
-        var a = SomeClass.InnerClassA.new()
-        var b = SomeClass.InnerClassB.new()
+        var my_class = SomeClass.MyInnerClass.new()
         ```
 
 - C++:

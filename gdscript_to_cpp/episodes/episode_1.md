@@ -221,7 +221,7 @@ struct DerivedClass : BaseClass {
 
 - C++:
     - Supports inner classes.
-    - Multiple scripts? Be careful, ~ "bad practice". Allowances...
+    - Multiple classes? Be careful, ~ "bad practice". Allowances...
         - Use one and not others? No. Interconnected classes. Use one == all.
 
             ```cpp

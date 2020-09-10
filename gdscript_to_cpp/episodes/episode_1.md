@@ -221,7 +221,30 @@ struct DerivedClass : BaseClass {
 
 - C++:
     - Supports inner classes.
+
+        Example: require custom data structures for class
+
+        ```cpp
+        // `/scene/resources/tile_set.h`
+        class TileSet : public Resource {
+        public:
+            // Belongs to TileSet, but...
+            // - TileSetEditorPlugin creates them *for* TileSet
+            //     - Passes to TileSet to create internal TileData instances.
+            // - TileMap accesses them for rendering calculations.
+            struct ShapeData {
+                // dimensions, position, etc.
+            };
+        private:
+            // Managed internally by TileSet. Holds all data for a tile.
+            struct TileData {
+                // ShapeData array
+            };
+        };
+        ```
+
     - Multiple classes? Be careful, ~ "bad practice". Allowances...
+
         - Use one and not others? No. Interconnected classes. Use one == all.
 
             ```cpp
@@ -243,23 +266,15 @@ struct DerivedClass : BaseClass {
             };
             ```
 
-        - Use inner classes if require custom data structures for class
+        - Most features in base class with minor changes in derived class.
 
             ```cpp
-            // `/scene/resources/tile_set.h`
-            class TileSet : public Resource {
-            public:
-                // Belongs to TileSet, but...
-                // - TileSetEditorPlugin creates them *for* TileSet
-                //     - Passes to TileSet to create internal TileData instances.
-                // - TileMap accesses them for rendering calculations.
-                struct ShapeData {
-                    // dimensions, position, etc.
-                };
-            private:
-                // Managed internally by TileSet. Holds all data for a tile.
-                struct TileData {
-                    // ShapeData array
-                };
+            // `/scene/gui/popup.h`
+            class Popup : public Window {
+            };
+
+            class PopupPanel : public Popup {
+                // Has a Panel.
+                // Overrides only 3 methods
             };
             ```

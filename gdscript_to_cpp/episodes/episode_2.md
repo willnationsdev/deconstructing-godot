@@ -1,4 +1,4 @@
-# GDScript to C++ Episode 2: Manipulating Memory
+# GDScript to C++ Episode 2: Memory Manipulation
 
 Programs write data to memory addresses.
 
@@ -208,373 +208,77 @@ int y = INT_MAX; // ~ 32k or ~ 2b
 y = y + 1;       // ~ -32k or ~ -2b
 ```
 
-> Note: alternate, explicit names for byte sizes and signage of integers exist.
-> 
-> ```cpp
-> int8_t  // signed
-> int16_t
-> int32_t
-> int64_t
-> uint8_t // unsigned
-> uint16_t
-> uint32_t
-> uint64_t
->
-> size_t  // unsigned int on native platform
-> ```
+## Typedef
 
-## Data Types: Primitives
+In GDScript, you can load a "class" into a given name.
 
-"Primitive" data types:
-
-- Built-in.
-- Small enough to fit in one CPU register (no more than 8 bytes)
-
-`int`, `unsigned int`, etc. are primitives + many more...
-
-### Char
-
-Used for low integral values. Also used for character encodings (ASCII, UTF8, etc.).
-
-```cpp
-char c; // 1 byte, range: -128-127
-unsigned char c; // 1 byte, range: 0-256 (can b/c integral)
-wchar_t wc; // 2 bytes, "wide char"
-```
-
-Also supports "character" values. Interpreted via "character encoding", e.g. ASCII, UTF-8, etc.
-
-```cpp
-char c = 0x68;
-char h = 'h'; // single quotes, one letter only
-c == h; // true
-```
-
-> [See more about how to configure the used character encoding](https://stackoverflow.com/questions/9739070/char-encoding).
-
-Can be used for "C-strings":
-
-A sequence of characters, represented with numbers, which ends when the value `0x00` is encountered.
-
-```cpp
-"hello"
-'h',  'e',  'l',  'l',  'o'  ('\0')
-0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x00 // ASCII for example
-
-// size = 5 bytes
-// capacity = 6 or more bytes
-```
-
-> Note: C-strings are *not* objects with methods. They are *primitives* like an int, float, or bool.
-> 
-> GDScript/Python/C#/etc. = opposite. Implicitly convert literals to String objects. "hello" == String("hello")
-
-Can also represent numbers, visually, with character encodings.
-
-```cpp
-// 1000
-'1',  '0',  '0',  '0'  ('\0')
-0x31, 0x30, 0x30, 0x30, 0x00
-
-// vs. int
-short x = 1000; // 0x03E8
-
-// 5 bytes vs. 2 bytes!
-```
-
-### Float/Double
-
-Used for targeting very large or small numbers with only a few bits.
-
-Idea:
-
-```cpp
--314 == -1 * 3.14 * 10^2
-// 1 bit for "sign".
-// some bits for moving decimal point, "exponent".
-// remaining bits for value, "significand" or "mantissa".
-// Use base 2, not base 10.
-```
-
-Float: sign=1, exp=8, sig=23: 32 bits
-
-Double: sign=1, exp=11, sig=52: 64 bits
-
-```cpp
-float f = -3.14;
-// sign|    exp|                    sig|
-//  -1|       2|                    314|
-//  -1| 128-127|                      3|
-//   1|10000000|10010001111010111000011|
-//   1100|0000|0100|1000|1111|0101|1100|0011
-// 0xC    0    4    8    F    5    C    3
-// 0xC048F5C3
-
-```
-
-> [See more about the algorithm](https://matthew-brett.github.io/teaching/floating_point.html). Too complex for detailing here.
-
-> Exponent: 0x00... == +0 or -0
-> 
-> Exponent: 0xFF... == +INF, -INF, NaN
-
-### References
-
-References are like a compile-time search-and-replace *exclusively* for variables.
-
-They are their own data type which can be applied to any other data type using an `&` to mark it.
-
-```cpp
-2;          // ------, 0x00000002: literal
-int a = 2;  // 450130, 0x00000002: init literal
-int b = a;  // 450134, 0x00000002: copy value
-int &c = a; // 450134, ----------: a compile-time reference
-int d = c;  // 450138, 0x00000002: copy value @ `a`
-```
-
-The value *must* exist ahead of time.
-
-```cpp
-int &x = 100; // Error! 100 is not an addressable value.
-int &y; // Error! Declaration does not reference anything.
-```
-
-References cannot be mutated themselves.
-
-```cpp
-int a = 2;
-int b = 5;
-int &c = a; // Define `c` referencing `a`.
-
-// Set `a` to value of `b`: 5
-// Does NOT mutate `c` to reference `b` instead.
-c = b;
-```
-
-Similar to an OS "hard link". Two files linked to same data.
-
-No equivalent in GDScript.
-
-> "pass by value" and "pass by reference" = different, but related, concept.
-
-### Pointers
-
-Pointer = integral, memory address to a specific data type.
-
-```cpp
-int x = 2;   // 450130, value = 2
-int *y = &x; // 450134, value = 450130
-```
-
-`*` = pointer (incomplete type).
-
-`int*` = pointer to an int (complete type).
-
-`&` on *expression*, not *declaration*, = "get address" operator.
-
-Cannot mix *primitive* pointer types (cover non-primitives later).
-
-```cpp
-int x = 2;
-float *y = &x; // Error! Cannot convert `int*` to `float*`
-```
-
-Can nest pointers (will cover later in "arrays" lesson).
-
-```cpp
-int x = 2;
-int *y = &x;  // can only point to an `int`
-int **z = &y; // can only point to an `int*`
-```
-
-Placement of asterisk is driven by convention.
-
-```cpp
-int *y = &x;
-int* y = &x; // ~equivalent
-```
-
-Multi-variable declarations in C++ exist.
-
-```cpp
-int x, y, z; // declare 3 uninitialized variables
-```
-
-Placement of asterisk affects data type in multi-variable declarations.
-
-```cpp
-int* x, y;  // x = int*, y = int
-int *x, *y; // x = int*, y = int*
-```
-
-Unlike references, they are variables with memory and a distinct value. Therefore...
-
-...you can initialize them later
-
-```cpp
-int x;
-int &y; // Error! Must initialize a reference
-int *z; // Works
-z = &x; // Works
-```
-
-...and re-assign them to new values.
-
-```cpp
-int x;
-int y;
-int *z = &x;
-z = &y; // Works
-```
-
-Pointers have a keyword expression for the 0 address:
-
-```cpp
-int *x = nullptr; // value = 0x0000000000000000 (64-bit)
-int *y = 0; // signed int implicit cast to int*, zero-filled.
-```
-
-> Equivalent to GDScript's `null`.
-
-Reference = alt symbol for addressable value. Therefore, can use variable directly.
-
-```cpp
-int x = 2;  // 450130, value = 2
-int &y = x; // ------, value = 2
-int z = y;  // 450134, value = 2, value copied from `x`
-```
-
-Pointers store memory addresses though! Must *dereference* address (i.e. load address / go to the address).
-
-```cpp
-int x = 2;   // 450130, value = 2
-int *y = &x; // 450134, value = 450130
-int mem = y; // 450142, value = 450130
-int z = *y;  // 450146, value = 2
-```
-
-`*` on *expression*, not *declaration*, = "dereference" operator.
-
-Different usage with classes.
-
-```cpp
-// Define class
-struct SomeClass {
-    int x = 2;
-};
-
-// Create local instance of class called `sc`.
-SomeClass sc;
-
-// `.` operator to get property/method of instance.
-int y = sc.x; // value = 2
-
-SomeClass *ptr = &sc;
-
-// WRONG order of operations:
-// Use `.` operator on `ptr`,
-// get `x` symbol from it,
-// and THEN try to dereference it.
-int c = *ptr.x // Error! Cannot apply `.` to pointer.
-
-// CORRECT order of operations:
-// 1. Dereference
-// 2. Parenthesize to forcibly reduce expression
-// 3. THEN do `.` operator
-int a = (*ptr).x;
-
-// OR arrow syntax
-int b = ptr->x;
-
-// Remember, references require *actual* value.
-// Error! Can't convert SomeClass* to SomeClass&.
-SomeClass &sc2 = ptr; 
-
-SomeClass &sc2 = *ptr; // safe!
-
-// Beware dereferencing nullptr.
-ptr = nullptr;
-int c = *ptr; // Error! Segmentation fault. Cannot access.
-```
-
-Pointers are *integral* values, so you can perform math operations with them.
-
-```cpp
-char *cstring = "hello";
-char h = *(c+0);
-char e = *(c+1);
-char l = *(c+2);
-char l = *(c+3);
-char o = *(c+4);
-```
-
-`*` and `->` have low precedence. To use operators, often must wrap in `()` or call operator explicitly.
-
-```cpp
-class BigInteger { ... };
-BigInteger bi;
-BigInteger *ptr = &bi;
-
-*ptr++; // Wrong! Mutated memaddress, THEN dereferenced `ptr`.
-ptr->++; // Syntax error!
-(*ptr)++; // Works! Use () to deref first, then increment. 
-ptr->operator++(); // Works! Called op function directly.
-```
-
-### Bool
-
-In GDScript, many non-zero things will implicitly cast to a `false` bool, including...
-
-- An empty Array: `[]`
-- An empty Dictionary: `{}`
-- An empty Pool Array: `PoolByteArray()`
-- A zero-filled numeric structure...
-    - `Vector2()`
-    - `Vector3()`
-    - `Color(0)`
-        - `Color()` is actually `Color(0, 0, 0, 1)`, so `true`.
-- An empty string: `""`
-
-These are called `falsy` values. Common in dynamically typed languages.
+You can then also rename that class by defining another constant with the same value.
 
 ```gdscript
-# Implicitly casts to bool with `false` value
-var arr = []
-if not arr:
-    print("arr is empty")
+const MyClass = preload("my_class.gd")
+const SameClass = MyClass
 ```
 
-However, their type information is retained if compared to other types.
+In C++, you can similarly define an alias for a typename using the `typedef` keyword.
+
+```cpp
+// Syntax: typedef <OldName> <AliasName>
+class A {};
+typedef A AA;
+
+A a;
+AA aa; // same type as `a`
+```
+
+Typedefs are used to define concrete sizes for integral values on various platforms.
+
+```cpp
+int8_t  // signed
+int16_t
+int32_t
+int64_t
+uint8_t // unsigned
+uint16_t
+uint32_t
+uint64_t
+
+size_t  // unsigned int on native platform
+```
+
+## Enum
+
+Enums are finite lists of numeric values.
+
+In GDScript, an `enum` defines a Dictionary constant with `string:int` keys.
 
 ```gdscript
-var arr = []
-var dict = {}
+enum Suit {
+    Spades,  # int: 0
+    Clubs,   # int: 1
+    Hearts,  # int: 2
+    Diamonds # int: 3
+}
 
-if arr == dict:
-    # This does NOT work.
-    # An empty Array is not equal to an empty Dictionary
-    print("Both are empty")
-
-if bool(arr) == bool(dict):
-    # This DOES work
-    # The boolean representations of these two are equal
-    print("Both are empty")
+const SPADES: int = Suit.Spades # works!
+var keys: Array = Suit.keys()
+var spades_key: string = keys[0] # works!
+var size = Suit.size()
 ```
 
-In C++, `false` is `0x00`, i.e. all zero bits. Else `true`.
+In C++, `enum` = type declaration for 1+ integral values.
 
-Each data type has its own potential representation of 0.
+```cpp
+enum Suit {
+    Spades,   // 0
+    Clubs,    // 1
+    Hearts,   // 2
+    Diamonds, // 3
+    SUIT_SIZE // 4, last record used for size
+}; // note: quotes and semi-colon
 
-|Type|Value|
-|----|-----|
-|`bool`|`false`
-|`int`|`0`
-|`char`|`'\0'`
-|`float`|`0.0`
-|`pointer (*)`|`nullptr` or `NULL` before C++11
+Suit s = Spades; // same as `s = 0;`
+s = 1000; // C++ doesn't block other integral values!
 
-## GDScript, Variant, and Union
-
-Required: C++ knows location/size at compile time.
-
-How does GDScript work then?
+int size = Suit.size(); // Error! No member `size()`
+int size = SUIT_SIZE; // 4
+```

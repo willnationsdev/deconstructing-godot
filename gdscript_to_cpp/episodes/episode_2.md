@@ -1,4 +1,4 @@
-# GDScript to C++ Episode 2: Memory Manipulation
+# GDScript to C++ Episode 2: Memory and Integrals
 
 Programs write data to memory addresses.
 

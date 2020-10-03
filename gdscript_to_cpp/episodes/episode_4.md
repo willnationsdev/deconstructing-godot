@@ -1,23 +1,6 @@
 # GDScript to C++ Episode 4: Scopes, Control Flow, and Functions
 
-What's a scope? Shadowing?
-
-- `{}`
-
-How to conditionally execute code?
-
-- `if`, `else if`, `else`
-- `switch`, `case`, `default`
-
-How to re-execute existing code? 
-
-- `while` loop
-- `do-while` loop
-- `for` loop
-
-How to re-execute existing code *with slight changes*?
-
-- functions
+How to manipulate *code flow*?
 
 ## Scopes
 
@@ -27,7 +10,14 @@ How to re-execute existing code *with slight changes*?
 
 GDScript:
 
-Must use conditional/loop/function/classs to create scope.
+Create with...
+
+- conditionals
+- loops
+- functions
+- inner classes
+
+> Anything that requires a colon (`:`).
 
 ```gdscript
 var x = true
@@ -53,6 +43,8 @@ bool x = true;
 // only x exists
 ```
 
+> Some edge cases don't require `{}`, but very bad practice.
+
 ## Shadowing
 
 Redeclare a variable in a new scope. For scope duration, it "shadows" or hides the original.
@@ -71,6 +63,9 @@ Supported in C++:
 bool x = true;
 {
     int x = 2; // Works! `bool x` doesn't exist now!
+
+    // Also would've worked. Data type doesn't matter.
+    bool x = false; 
 }
 ```
 
@@ -129,7 +124,7 @@ else
 }
 ```
 
-Yet another shorthand syntax (no fluff):
+Yet another shorthand syntax (not recommended):
 
 ```cpp
 bool x = true;
@@ -141,6 +136,37 @@ else
     // do C;
 ```
 
+Above syntax == only 1 statement.
+
+```cpp
+if (true)
+    bool x = true;
+    bool y = false;
+// equivalent to...
+if (true)
+    bool x = true;
+bool y = false;
+```
+
+> Remember when I said you usually have *either* `{}` OR `;`? 1+ vs 1 statement.
+> 
+> Truth be told, class declarations actually support this:
+> 
+> ```cpp
+> class A {} a;
+> // equal to...
+> class A {};
+> A a;
+> ```
+> 
+> \^ Reason for both `{}` and `;` with class declaration.
+
+Can also inline statement. Not recommended.
+
+```cpp
+if (true) bool x true;
+```
+
 1 style per project convention, for consistency/readability.
 
 Main differences:
@@ -149,27 +175,41 @@ Main differences:
 
     GDScript: `elif`
 
-- C++: `()` optional
+- C++: `()` required for expression.
 
     GDScript: `()` optional/unconventional.
 
-- C++: `{}` required for body.
+- C++: `{}` recommended for body (w/o, only 1 statement).
 
     GDScript: indented body.
 
-## Switch
+Both languages also support ternary operators.
 
 GDScript:
 
 ```gdscript
-const SomeType = preload("some_type.gd")
-var obj = SomeType.new()
-var value = obj.some_method()
+# <true> if <expression> else <false>
+"true" if 1 == 1 else "false"
+```
 
-# Who knows what the heck this is? We don't know.
+C++:
+
+```cpp
+// <expression> ? <true> : <false>
+1 == 1 ? "true" : "false"
+```
+
+## Switch
+
+Compare many values against the same expression.
+
+GDScript:
+
+```gdscript
+var value = <expression>
 match value:
 
-    # Match multiple things with one block
+    # Match multiple things with one block.
     [], {}, PoolByteArray(), PoolIntArray():
         print("value is some empty container")
 
@@ -180,17 +220,20 @@ match value:
 
         print("value is `str('hello')`")
 
-    # Matches all remaining cases
+    # `_` matches all remaining cases.
     _:
         print("value was something else")
 ```
 
 C++:
 
+The `expression` must be an *integral* value.
+
 ```cpp
-class SomeClass {};
-SomeClass sc;
-int value = sc.some_method(); // call function in sc
+int value = <expression>;
+// Supported: bool, char, short, int
+// Not supported: float, X, ""
+// Can cast pointers to `size_t` / `uint64_t`
 
 switch (value) {
     case 0:
@@ -220,68 +263,147 @@ switch (value) {
 }
 ```
 
+## Loops: While / Do-While
+
+Repeatedly execute a block. Evaluate a bool expression to determine (re)entry.
+
+GDScript:
 
 ```gdscript
-var sentence = "Hello World Will"
-var words = sentence.split(" ")
-var word = words[0]
-
-# If statements
-# Distinct evaluation per expression
-if word:
-    print("Non-empty string!")
-elif word == "Hello":
-    print("First word is \"Hello\"")
-else:
-    print("First word is not empty or \"Hello\"")
-
-# match statement
-# multiple comparisons to one expression
-match word:
-    "Hello":
-        print("First word = \"Hello\"")
-    "World":
-        print("First word = \"World\"")
-    "Will":
-        print("First word = \"Will\"")
-    
-    # Supports comparing other types.
-    # No compile-time error.
-    15:
-        print("First word was not the number 15")
-    
-    []:
-        print("First word was not an empty array")
-
-# Actually makes for very flexible APIs
-var obj = SomeType.new()
-var value = obj.some_method()
-
-# Who knows what the heck this is? We don't know.
-match value:
-
-    # Match multiple things with one block
-    [], {}, PoolByteArray(), PoolIntArray():
-        print("value is some empty container")
-
-    # Matches all remaining cases
-    _:
-        print("value was something else")
+while true:
+    print("hi") # infinite loop
 ```
 
-In C++, you have some similar constructs.
+State management occurs separately.
 
-Syntax:
+```gdscript
+var i = 0        # set iterator
+var size = 10    # set "base case"
+while i < 10:    # eval itr. At base case to quit?
+    var x = i    # logic body
+    i += 1       # advance towards base case
+```
+
+Equivalent in C++ with identical caveats of if statements:
+
+- Require `()` around expression.
+- Replace `:` indented block with `{}`.
+- Can replace `{}` with single statement `;`.
 
 ```cpp
-if (bool_expression) {
-    // do if true
+while (true) {
+    print_line("hi"); // Godot print, infinite loop
+}
+
+// State management
+int i = 0;          // set iterator
+int size = 10;      // set "base case"
+while (i < size) {  // eval itr. At base case to quit?
+    int x = i;      // logic body
+    i++;            // advance towards base case
 }
 ```
 
-```cpp
-int x = 10;
-int y = 20;
+Need to change to "do logic, advance, THEN eval itr?"
 
-if ()
+Do-While Loop:
+
+```cpp
+do {
+    int x = i;      // logic body
+    i++;            // advance towards base case
+} while (i < size); // eval itr. At base to quit?
+```
+
+`;` after while eval because must conclude statement. Didn't already end with curly braces.
+
+C++ also has `for` loop. Bottles up state management into local/consistent format:
+
+```cpp
+// syntax:
+// for (initializers; eval expression; advance) {
+//     logic body
+// }
+// initializers: Executed once at start.
+//               Symbols locally scoped.
+// eval expr   : executed before every body exec.
+//             : only enter body if `true`.
+// advance     : executed at end of every body exec.
+
+// Example:
+for (int i = 0, int size = 10; i < size; i++) {
+    int x = i;
+}
+// `i` and `size` are scoped to for loop. Don't exist.
+
+// More commonly seen like this:
+for (int i = 0; i < 10; i++) {
+
+}
+```
+
+GDScript *does* have a `for` loop, but no state management. Iterates through data structure (aka "for-each" loop).
+
+```gdscript
+var numbers = [0, 1, 2, 3]
+for i in numbers:
+    print(i)
+# equivalent
+for i in 4: # implicit array expansion, 4 elements
+    print(i)
+```
+
+C++ added "range-based for loops". Collection class must support it.
+
+This isn't legit, but something like this:
+
+```cpp
+CollectionOfInts coi;
+for (int elem : coi) {
+
+}
+```
+
+## Functions (Basic Syntax)
+
+> A `function` is an input/output mechanism that abstracts a set of instructions.
+> 
+> A `method` is a function that belongs to a `class`.
+
+GDScript methods have optional static typing.
+
+```gdscript
+# dynamic
+func add(left, right):
+    return left + right
+
+# static
+func add(left: int, right: int) -> int:
+    return left + right
+
+# no return value
+func do_nothing():
+    pass
+
+func _ready():
+    var x = add(3, 4) # 7
+    var y = do_nothing() # null
+```
+
+In C++, statically typed. Not optional addendum at end of info. *Start* with the data type.
+
+```cpp
+int add(int left, int right) {
+    return left + right;
+}
+
+// no return value, void 'type'
+void do_nothing() {
+}
+
+// usage:
+int x = add(3, 4);     // 7
+int x = do_nothing();  // Error! Cannot assign `void`
+void x = do_nothing(); // Error! `void` not a type.
+do_nothing();          // Correct
 ```

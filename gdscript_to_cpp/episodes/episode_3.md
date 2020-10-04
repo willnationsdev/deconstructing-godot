@@ -29,13 +29,14 @@ c == h; // true
 
 Can be used for "C-strings":
 
-A sequence of characters, represented with numbers, which ends when the value `0x00` is encountered.
+A sequence of characters, represented with numbers, which ends when the value `0x00` is encountered. The `0x00` is expressed with `'\0'`, the "null terminator".
 
 ```cpp
 "hello"
 'h',  'e',  'l',  'l',  'o'  ('\0')
-0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x00 // ASCII for example
+0x68, 0x65, 0x6C, 0x6C, 0x6F, 0x00 // ASCII codes
 
+// In this example...
 // size = 5 bytes
 // capacity = 6 or more bytes
 ```
@@ -54,7 +55,8 @@ Can also represent numbers, visually, with character encodings.
 // vs. int
 short x = 1000; // 0x03E8
 
-// 5 bytes vs. 2 bytes!
+// 0x3130303000, 5 bytes, c-string
+// 0x03E8,       2 bytes, short
 ```
 
 ### Float/Double
@@ -63,31 +65,20 @@ Used for targeting very large or small numbers with only a few bits.
 
 Idea:
 
-```cpp
--314 == -1 * 3.14 * 10^2
-// 1 bit for "sign".
-// some bits for moving decimal point, "exponent".
-// remaining bits for value, "significand" or "mantissa".
-// Use base 2, not base 10.
-```
-
-Float: sign=1, exp=8, sig=23: 32 bits
-
-Double: sign=1, exp=11, sig=52: 64 bits
+Only store the number's scientific notation, e.g. `-3.14 * 10^2 == -314`.
 
 ```cpp
-float f = -3.14;
-// sign|    exp|                    sig|
-//  -1|       2|                    314|
-//  -1| 128-127|                      3|
-//   1|10000000|10010001111010111000011|
-//   1100|0000|0100|1000|1111|0101|1100|0011
-// 0xC    0    4    8    F    5    C    3
-// 0xC048F5C3
-
+// value     sign  sinificand  exponent
+   -314   == -1   *   3.14   *   10^2
 ```
 
-> [See more about the algorithm](https://matthew-brett.github.io/teaching/floating_point.html). Too complex for detailing here.
+Actually uses base 2, not base 10.
+
+Float: sign=1, exp=8, sig=23: 32 bits ~= 1.2\*10^-38 - 3.4\*10^38
+
+Double: sign=1, exp=11, sig=52: 64 bits ~= 2.2\*10^-308 - 1.8\*10^308
+
+> [See more about floating-point precision format.](https://floating-point-gui.de/formats/fp/) Too complex for detailing here.
 
 > Exponent: 0x00... == +0 or -0
 > 
@@ -411,9 +402,7 @@ A *ap = &a;
 
 ## Union
 
-Required: C++ knows location/size at compile time.
-
-How does GDScript work then? Dynamically typed.
+How does GDScript's dynamic typing work?
 
 C++:
 
@@ -485,3 +474,5 @@ mu.type = Int;
 
 mu.type == Int; // true
 ```
+
+Now we can check what "type" it is based on the enum, and access the correct field.

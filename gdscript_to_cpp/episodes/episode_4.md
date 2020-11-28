@@ -31,7 +31,7 @@ if true:
 
 C++:
 
-Only requires `{}`.
+Only requires `{}`. No conditional (or whatever) necessary.
 
 ```cpp
 bool x = true;
@@ -43,11 +43,11 @@ bool x = true;
 // only x exists
 ```
 
-> Some edge cases don't require `{}`, but very bad practice.
+> Some edge cases don't require `{}`, but bad practice not to use them.
 
 ## Shadowing
 
-Redeclare a variable in a new scope. For scope duration, it "shadows" or hides the original.
+Redeclare a variable in a new scope. For scope duration, it "shadows" or hides the original symbol.
 
 Not supported in GDScript:
 
@@ -78,6 +78,13 @@ bool x = false; // Error! Redeclaration of `bool x`!
 ```
 
 > Some languages, like F# or Rust, support this.
+
+```fsharp
+// F#
+let x = 10 // x == 10
+let x = x + 10 // x == 20
+let x = x + x // x == 40
+```
 
 ## If Statements
 
@@ -164,7 +171,7 @@ bool y = false;
 Can also inline statement. Not recommended.
 
 ```cpp
-if (true) bool x true;
+if (true) bool x = true;
 ```
 
 1 style per project convention, for consistency/readability.
@@ -179,9 +186,9 @@ Main differences:
 
     GDScript: `()` optional/unconventional.
 
-- C++: `{}` recommended for body (w/o, only 1 statement).
+- C++: `{}` recommended for block. No `{}` = only 1 statement (`;`).
 
-    GDScript: indented body.
+    GDScript: indent after colon (`:`) required. Block ends with dedent.
 
 Both languages also support ternary operators.
 

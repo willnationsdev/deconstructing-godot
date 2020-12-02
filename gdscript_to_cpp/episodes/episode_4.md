@@ -219,6 +219,9 @@ In C++, this doesn't happen. Nested symbol duplication results in *shadowing* th
 bool x = true;
 {
     int x = 2; // Works! `bool x` doesn't exist now!
+
+    // all references to `x` now get `x` from local scope.
+    int sum = x + x; // 4
 }
 {
     bool x = false; // Works! Data type doesn't matter.
@@ -336,7 +339,7 @@ int count = 0;
 The syntax has *not* changed.
 
 ```xml
-<DataType><Symbol><AssignmentOperator><ValueExpression>
+<DataType><Symbol><AssignmentOperator><ValueExpression><Semicolon>
 ```
 
 By default, in the global *namespace*.

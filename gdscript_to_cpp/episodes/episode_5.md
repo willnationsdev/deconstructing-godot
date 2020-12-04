@@ -4,97 +4,86 @@
 
 In GDScript:
 
-All variables are implicitly wrapped in a C++ Variant object that understands some type comparisons.
-
 ```gdscript
-var x = true
-if x:        # true (obviously)
+var x := 0
+if x == 10:
     # do A
-elif 2:      # non-zero, true
+elif x == 15:
     # do B
-elif x == 2: # bool(x) == int(2), int is non-zero, true
+elif x: # implicitly cast to bool. 0 -> false.
     # do C
-elif 5 == 2: # int(5) == int(2), false
-    # do D
-               # Variant doesn't know how to compare these two types.
-elif "2" == 2: # str(2) == int(2), Error! Invalid operands for `==`.
-    # do E
-elif "2" == "2": # str(2) == str(2), Strings have the same content: true
-    # do F
 else:
-    # do G
+    # do D
 ```
 
-C++:
-
-There is no built-in Variant wrapper. However, everything is a number. A `bool` always evaluates, as a number, to either `0` (false) or `1` (true).
+In C++:
 
 ```cpp
-bool x = true;
-if (x) {                 // bool value of true: true
+int x = 0;
+if (x == 10) {
     // do A
-} else if (2) {          // implicitly casts int to bool. Non-zero: true
+} else if (x == 15) {
     // do B
-} else if (x == 2) {     // implicitly casts bool to int. 1 == 2: false
+} else if (x) { // implicitly cast to bool. 0 -> false.
     // do C
-} else if (5 == 2) {     // no casting. int values not equal: false
-    // do D
-} else if ("2" == 2) {   // Error! Cannot compare pointer (char*) with int.
-    // do E
-} else if ("2" == "2") { // false! Wuuuuut? Cover next lesson
-    // do F
 } else {
-    // do G
+    // do D
 }
 ```
 
-Alternative syntax (placement of curly braces):
+- `elif` -> `else if`
+- Parentheses (`()`) around expressions
 
-> This is the standard for C#.
+Another supported style (standard for C#, Java, etc.):
 
 ```cpp
-bool x = true;
-if (x)
+if (...)
 {
-    // do A statements
+    // do A
 }
-else if (x == 2)
+else if (...)
 {
-    // do B statements
+    // do B
 }
 else
 {
-    // do C statements
+    // do C
 }
 ```
 
-Yet another shorthand syntax (not recommended):
+Coding convention decides.
 
-```cpp
-bool x = true;
-if (x)
-    // do A;
-else if (x == 2)
-    // do B;
-else
-    // do C;
-```
-
-Above syntax == only 1 statement.
+Syntax also supports just statements, no `{}` blocks.
 
 ```cpp
 if (true)
-    bool x = true;
-    bool y = false;
-// equivalent to...
-if (true)
-    bool x = true;
-bool y = false;
+    print_line("hello");
 ```
 
-> Remember when I said you usually have *either* `{}` OR `;`? 1+ vs 1 statement.
+However, these are often considered a code smell.
+
+```cpp
+if (false)
+    print_line("hello ");
+    print_line("world!");
+// same as
+if (false)
+    print_line("hello ");
+print_line("world!");
+// same as
+if (false) {
+    print_line("hello ");
+}
+print_line("world!");
+```
+
+Also, if have `{}` already, no need to *add* them for later edits.
+
+Statements (`;`) force a single line of code. Blocks (`{}`) give flexibility for 0+ lines of code.
+
+> So, why then do class declarations need `{}` *and* `;`?
 > 
-> Truth be told, class declarations actually support this:
+> Actually, they can post-declare instance symbols.
 > 
 > ```cpp
 > class A {} a;
@@ -102,16 +91,16 @@ bool y = false;
 > class A {};
 > A a;
 > ```
-> 
-> \^ Reason for both `{}` and `;` with class declaration.
 
-Can also inline statement. Not recommended.
+🤮 Blegh! Who's gonna pay attention to that?
+
+Can also inline statements. Even more nasty.
 
 ```cpp
-if (true) bool x = true;
+if (some_test()) do_something();
+else if (1 == 2) do_something_else();
+else otherwise_do_this();
 ```
-
-1 style per project convention, for consistency/readability.
 
 > How to check if pointer is valid? Now we know!
 > 
@@ -126,7 +115,7 @@ if (true) bool x = true;
 > }
 > ```
 
-Main differences:
+Main Differences Recap:
 
 - C++: `else if`
 
@@ -136,7 +125,7 @@ Main differences:
 
     GDScript: `()` optional/unconventional.
 
-- C++: `{}` recommended for block. No `{}` = only 1 statement (`;`).
+- C++: `{}` recommended for block. No `{}` = only 1 statement (`;`) (BAD).
 
     GDScript: indent after colon (`:`) required. Always a block. Block ends with dedent.
 

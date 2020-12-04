@@ -246,7 +246,7 @@ In C++, there's a difference between *declaring* that a symbol exists vs. *defin
 struct Vector2 {
     float x = 0.0f;
     float y = 0.0f;
-}
+};
 
 // Can separate declaration and definition
 struct Vector3;
@@ -344,9 +344,9 @@ The syntax has *not* changed.
 
 By default, in the global *namespace*.
 
-A `namespace` is a kind of scope for typenames: Classes, structs, enums, etc.
+A `namespace` is a kind of named permanent scope for symbols. If you declare something inside a namespace, the symbol persists even after you leave the namespace, but you will need to scope into the namespace to be able to access it.
 
-The symbol we want, `count`, is part of `Counter`, so we must enter its space with `::` before the symbol becomes visible to use from the global namespace.
+The symbol we want, `count`, is part of the `Counter` class, so we must enter its space with `::` before the symbol becomes visible to use from the global namespace.
 
 But, why must we define it separately?
 
@@ -371,7 +371,7 @@ int count = 10;
 struct Counter {
     static int count;
     Counter() { count += ::count; }
-}
+};
 int Counter::count = 0;
 ```
 

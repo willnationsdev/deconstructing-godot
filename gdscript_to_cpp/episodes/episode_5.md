@@ -33,6 +33,7 @@ if (x == 10) {
 
 - `elif` -> `else if`
 - Parentheses (`()`) around expressions
+- For blocks, curly brances (`{}`) are required. C++ does not rely on indentation.
 
 Another supported style (standard for C#, Java, etc.):
 
